@@ -2,6 +2,7 @@
 
 #include "HLTanalyzers/Jets/interface/HLTJetAnalysis.h"
 
+#include "FWCore/ParameterSet/interface/InputTag.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/Handle.h"
@@ -20,6 +21,7 @@ private:
   ///Default analyses
   HLTJetAnalysis jet_analysis_;
   std::string recjets_,genjets_,recmet_,genmet_,calotowers_,hltobj_,hltresults_;
+  edm::InputTag l1CollectionsTag_;
   int errCnt;
   const int errMax(){return 100;}
 };

@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "HLTanalyzers/Jets/interface/HLTJetAnalysis.h"
+#include "HLTanalyzers/Jets/interface/JetUtil.h"
 
 typedef CaloJetCollection::const_iterator CalJetIter;
 typedef GenJetCollection::const_iterator GenJetIter;
@@ -77,7 +78,7 @@ void HLTJetAnalysis::fillHist(const TString& histName, const Double_t& value, co
 
 }
 
-void HLTJetAnalysis::fillHist(const TString& histName, const Double_t& x,const Double_t& y,const Double_t& wt) {
+void HLTJetAnalysis::fill2DHist(const TString& histName, const Double_t& x,const Double_t& y,const Double_t& wt) {
 
   hid2D=m_HistNames2D.find(histName);
   if (hid2D==m_HistNames2D.end())
@@ -92,6 +93,7 @@ void HLTJetAnalysis::bookHistograms() {
   bookGeneralHistograms();
 
   bookHLTHistograms();
+  bookL1Histograms();
 
   bookCaloTowerHists();
 
@@ -102,18 +104,19 @@ void HLTJetAnalysis::bookHistograms() {
   bookMetHists("Calo");
 
   if (_Monte) bookMCParticles();
-
+  
 }
 /* **Analyze the event** */
 void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
-			   const GenJetCollection& genjets,
-			   const CaloMETCollection& recmets,
-			   const GenMETCollection& genmets,
-			   const CaloTowerCollection& caloTowers,
-			   const HepMC::GenEvent mctruth,
-			   const HLTFilterObjectWithRefs& hltobj,
-			   const edm::TriggerResults& hltresults,
-			   const CaloGeometry& geom) {
+			      const GenJetCollection& genjets,
+			      const CaloMETCollection& recmets,
+			      const GenMETCollection& genmets,
+			      const CaloTowerCollection& caloTowers,
+			      const HepMC::GenEvent mctruth,
+			      const HLTFilterObjectWithRefs& hltobj,
+			      const edm::TriggerResults& hltresults,
+			      const l1extra::L1JetParticleCollection& l1jets,
+			      const CaloGeometry& geom) {
 
   // std::cout << " Beginning HLTJetAnalysis -- Pthat= " << _CKIN3 << ":" << _CKIN4 <<std::endl;
 
@@ -122,8 +125,11 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
   (&calojets) ? doCaloJets=true : doCaloJets=false;
   (&genjets) ? doGenJets=true : doGenJets=false;
 
+  fillHist("Nevents",0.0);
 
+  evtTriggered=false;
   getHLTResults(hltresults);
+  if (evtTriggered)fillHist("Nevents",1.0); // fill Nevents histogram if at least one trigger fired
   trig_iter=hltTriggerMap.find(_HLTPath);
   if (trig_iter==hltTriggerMap.end()){
     std::cout << "%HLTJetAnalysis -- Could not find trigger with pathname: " << _HLTPath << std::endl;
@@ -135,8 +141,7 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
   getHLTParticleInfo(hltobj);
 
 
-  fillHist("Nevents",0.0);
-  if (hlttrig)fillHist("Nevents",1.0);
+  if (hlttrig)fillHist("Nevents",2.0); // fill Nevents histogram if desired trigger fired
 
   // Make a copy, so that you can sort
 
@@ -163,6 +168,8 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
   // fill CaloTower hists
   fillCaloTowerHists(caloTowers);
 
+
+  if (doCaloJets ) doL1Analysis(mycalojets,l1jets);
 
   if (_Monte) fillMCParticles(mctruth);
 
@@ -216,7 +223,10 @@ void HLTJetAnalysis::getHLTResults(const edm::TriggerResults& hltResults) {
     }
 
     bool accept=hltResults.accept(itrig);
-    if (accept) fillHist("HLTrigger",float(itrig));
+    if (accept) {
+      fillHist("HLTrigger",float(itrig));
+      evtTriggered=true;
+    }
 
     if (_Debug){
       std::cout << "%getHLTResults --  HLTTrigger(" << itrig << "): " 
@@ -443,6 +453,52 @@ void HLTJetAnalysis::bookHLTHistograms() {
 
 }
 
+void HLTJetAnalysis::bookL1Histograms() {
+
+  TString hname,htitle;
+
+  hname="L1JetCollSize"; htitle="L1 Jet Collection Size";
+  m_HistNames[hname] = new TH1F( hname , htitle  , 10, -0.5, 9.5 );
+
+  Int_t nptbins=40;
+  Double_t ptmin=0,ptmax=200.;
+  hname="L1JetPt"; htitle="L1 Jet p_{T} -- Central";
+  m_HistNames[hname] = new TH1F( hname , htitle  , nptbins, ptmin, ptmax );
+  m_HistNames[hname]->Sumw2();
+
+  Int_t nphibins=20;
+  Double_t phimin=-M_PI,phimax=M_PI;
+  hname="L1JetPhi"; htitle="L1 Jet #phi -- Central";
+  m_HistNames[hname] = new TH1F( hname , htitle  , nphibins, phimin, phimax );
+  m_HistNames[hname]->Sumw2();
+
+  Int_t netabins=80;
+  Double_t etamin=-5,etamax=5.;
+  hname="L1JetEta"; htitle="L1 Jet #eta -- Central";
+  m_HistNames[hname] = new TH1F( hname , htitle  , netabins, etamin, etamax );
+  m_HistNames[hname]->Sumw2();
+
+  hname="L1DeltaR"; htitle="Delta R -- L1 and CaloJets";
+  m_HistNames[hname] = new TH1F( hname , htitle  , 100, 0., 10. );
+  m_HistNames[hname]->Sumw2();
+
+  hname="L1PtOverCaloPt";htitle=" L1 Jet p_{T} over CaloJet p_{T}";
+  m_HistNames[hname] = new TH1F( hname , htitle  , 40, 0., 2.0 );
+  m_HistNames[hname]->Sumw2();
+
+
+  Int_t n2dbins=50;
+  hname="L1etaVSJeteta"; htitle="L1 Jet #eta vs Reco Jet #eta -- Central";
+  m_HistNames2D[hname] = new TH2F( hname , htitle  , n2dbins, etamin, etamax, n2dbins, etamin, etamax );
+
+  hname="L1phiVSJetphi"; htitle="L1 Jet #phi vs Reco Jet #phi -- Central";
+  m_HistNames2D[hname] = new TH2F( hname , htitle  , n2dbins, phimin, phimax, n2dbins, phimin, phimax );
+
+  hname="L1ptVSJetpt"; htitle="L1 Jet p_{T} vs Reco Jet p_{T} -- Central";
+  m_HistNames2D[hname] = new TH2F( hname , htitle  , n2dbins, ptmin, ptmax, n2dbins, ptmin, ptmax );
+
+}
+
 void HLTJetAnalysis::bookCaloTowerHists() {
 
   TString hname;
@@ -502,7 +558,7 @@ void HLTJetAnalysis::fillCaloTowerHists(const CaloTowerCollection& caloTowers) {
     fillHist("CaloTowerHadEnergy",hadEnergy);
     fillHist("CaloTowerOuterEnergy",outerEnergy);
 
-    fillHist("CaloTowerEnergyEtaPhi",eta,phi,totEnergy);
+    fill2DHist("CaloTowerEnergyEtaPhi",eta,phi,totEnergy);
 
   }
 }
@@ -703,6 +759,60 @@ void HLTJetAnalysis::extractPtHat(edm::EventSetup const& isetup) {
 
 }
 
+void HLTJetAnalysis::doL1Analysis(const reco::CaloJetCollection& caloJets, 
+					  const l1extra::L1JetParticleCollection& l1Jets) {
+
+  double etaCut=2.5;
+  double drCut=0.5;
+
+  //cout << "%doL1Analysis -- Number of l1jets:   " << l1Jets.size() << endl;
+  //cout << "%doL1Analysis -- Number of calojets: " << caloJets.size() << endl;
+
+  //l1extra::L1JetParticleCollection::const_iterator l1_iter;
+  CaloJetCollection::const_iterator cal_iter;
+
+  fillHist("L1JetCollSize",l1Jets.size());
+
+
+  int il1=0;
+  for(l1extra::L1JetParticleCollection::const_iterator l1 = l1Jets.begin(); l1 != l1Jets.end(); ++l1) {
+    il1++;
+    //if (il1==1) l1_iter=l1;
+
+    Double_t pt_l1=l1->pt();
+    Double_t eta_l1=l1->eta();
+    Double_t phi_l1=l1->phi();
+
+    fillHist("L1JetPt",pt_l1);
+    fillHist("L1JetPhi",phi_l1);
+    fillHist("L1JetEta",eta_l1);
+
+    float rmin(99.);
+    for(CaloJetCollection::const_iterator cal = caloJets.begin(); cal != caloJets.end(); ++cal) {
+      if (fabs(cal->eta()) < etaCut){
+
+	Double_t pt_cal=cal->pt();
+	Double_t eta_cal=cal->eta();
+	Double_t phi_cal=cal->phi();
+	
+	float dr=radius(eta_cal,phi_cal,eta_l1,phi_l1);
+	if (pt_l1>20 && pt_cal>10) fillHist("L1DeltaR",dr);
+	
+	if(dr<rmin){rmin=dr;cal_iter=cal;}
+
+      }
+    }
+    if (rmin < drCut){
+      fill2DHist("L1etaVSJeteta",cal_iter->eta(),eta_l1,1.);
+      fill2DHist("L1phiVSJetphi",cal_iter->phi(),phi_l1,1.);
+      fill2DHist("L1ptVSJetpt",cal_iter->pt(),pt_l1,1.);
+
+      if (cal_iter->pt()>75.) fillHist("L1PtOverCaloPt",pt_l1/(cal_iter->pt()));
+    }
+
+    //cout << "\t " << il1 << " " << l1->pt() << " " << l1->eta() << " " << l1->phi() << endl;
+  }
+}
 void HLTJetAnalysis::dummyAnalyze(
 			   const CaloGeometry& geom) {
   std::cout << "Inside dummyAnalyse routine" << std::endl;

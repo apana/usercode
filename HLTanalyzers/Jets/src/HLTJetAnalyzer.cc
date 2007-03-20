@@ -18,6 +18,7 @@ HLTJetAnalyzer::HLTJetAnalyzer(edm::ParameterSet const& conf) {
   genjets_    = conf.getParameter< std::string > ("genjets");
   recmet_     = conf.getParameter< std::string > ("recmet");
   genmet_     = conf.getParameter< std::string > ("genmet");
+  l1CollectionsTag_     = conf.getParameter< edm::InputTag > ("l1collections");
   calotowers_ = conf.getParameter< std::string > ("calotowers");
   hltobj_    = conf.getParameter< std::string > ("hltobj");
   errCnt=0;
@@ -50,6 +51,10 @@ void HLTJetAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
   //  edm::Handle<std::vector<edm::HLTPathStatus> > hltresults;
   edm::Handle<edm::TriggerResults> hltresults;
 
+
+  edm::Handle<l1extra::L1JetParticleCollection> l1jets;
+
+
   
   // Extract Data objects (event fragments)
   // make sure to catch exceptions if they don't exist...
@@ -62,6 +67,13 @@ void HLTJetAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
     iEvent.getByLabel(hltobj_,hltobj);
   } catch (...) {
     errMsg=errMsg + "  -- No HLTOBJ with name: " + hltobj_ ;
+  }
+
+  edm::InputTag L1JetTag(edm::InputTag(l1CollectionsTag_.label(),"Central"));
+  try {
+    iEvent.getByLabel(L1JetTag,l1jets);
+  } catch (...) {
+    errMsg=errMsg + "  -- No L1Jets with name: " + L1JetTag.label() ;
   }
 
   try {
@@ -107,6 +119,7 @@ void HLTJetAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
 			*recmet,*genmet,
 			*caloTowers,mctruth,
 			*hltobj,*hltresults,
+			*l1jets,
 			*geometry);
 }
 

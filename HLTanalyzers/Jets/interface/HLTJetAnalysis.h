@@ -31,12 +31,19 @@
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
 
+#include "DataFormats/L1Trigger/interface/L1EmParticle.h"
+#include "DataFormats/L1Trigger/interface/L1JetParticle.h"
+#include "DataFormats/L1Trigger/interface/L1MuonParticle.h"
+#include "DataFormats/L1Trigger/interface/L1EtMissParticle.h"
+#include "DataFormats/L1Trigger/interface/L1ParticleMapFwd.h"
+#include "DataFormats/L1Trigger/interface/L1JetParticleFwd.h"
+
 typedef std::vector<std::string> MyStrings;
 
 /** \class HLTJetAnalysis
   *  
-  * $Date: $
-  * $Revision: $
+  * $Date: 2007/03/08 22:10:23 $
+  * $Revision: 1.1 $
   * \author L. Apanasevich - UIC
   */
 class HLTJetAnalysis {
@@ -45,7 +52,7 @@ public:
 
   void setup(const edm::ParameterSet& pSet);
   void fillHist(const TString& histName, const Double_t& value, const Double_t& wt=1.0);
-  void fillHist(const TString& histName, const Double_t& x,const Double_t& y,const Double_t& wt=1.0);
+  void fill2DHist(const TString& histName, const Double_t& x,const Double_t& y,const Double_t& wt=1.0);
   void extractPtHat(edm::EventSetup const& isetup);
 
   /** Analyze the Data */
@@ -57,6 +64,7 @@ public:
 	       const HepMC::GenEvent mctruth,
 	       const HLTFilterObjectWithRefs& hltobj,
 	       const edm::TriggerResults& hltresults,
+	       const l1extra::L1JetParticleCollection& l1jets,
 	       const CaloGeometry& geom);
 
   void dummyAnalyze(
@@ -78,10 +86,15 @@ public:
 
   template <typename T> void fillJetHists(const T& jets, const TString& prefx);
 
+  void doL1Analysis(const CaloJetCollection& caloJets, 
+		    const l1extra::L1JetParticleCollection& l1Jets);
+
   void bookMCParticles();
   void fillMCParticles(const HepMC::GenEvent mctruth);
 
   void bookHLTHistograms();
+  void bookL1Histograms();
+
   void getHLTResults(const edm::TriggerResults& hltResults);
   void getHLTParticleInfo(const HLTFilterObjectWithRefs& hltobj);
 
@@ -121,14 +134,8 @@ private:
   std::map<string,bool>::iterator trig_iter;
   bool hlttrig;
   bool hltInfoExists;
+  bool evtTriggered;
 
-};
-
-class PtGreater {
-  public:
-  template <typename T> bool operator () (const T& i, const T& j) {
-    return (i.pt() > j.pt());
-  }
 };
 
 #endif
