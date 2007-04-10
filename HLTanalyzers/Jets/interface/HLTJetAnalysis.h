@@ -42,8 +42,8 @@ typedef std::vector<std::string> MyStrings;
 
 /** \class HLTJetAnalysis
   *  
-  * $Date: 2007/03/08 22:10:23 $
-  * $Revision: 1.1 $
+  * $Date: 2007/03/20 16:14:51 $
+  * $Revision: 1.2 $
   * \author L. Apanasevich - UIC
   */
 class HLTJetAnalysis {
@@ -86,8 +86,12 @@ public:
 
   template <typename T> void fillJetHists(const T& jets, const TString& prefx);
 
-  void doL1Analysis(const CaloJetCollection& caloJets, 
-		    const l1extra::L1JetParticleCollection& l1Jets);
+  void L1Analysis( const CaloJetCollection& caloJets,
+		   const GenJetCollection& genJets,
+		   const l1extra::L1JetParticleCollection& l1Jets);
+
+  template <typename T> void mtchL1(const Double_t&, const Double_t&, const Double_t&, 
+				    const T& jets, const TString&);
 
   void bookMCParticles();
   void fillMCParticles(const HepMC::GenEvent mctruth);
