@@ -124,6 +124,14 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
 
   (&calojets) ? doCaloJets=true : doCaloJets=false;
   (&genjets) ? doGenJets=true : doGenJets=false;
+  (&l1jets) ? doL1Jets=true : doL1Jets=false;
+
+
+  float ptHat=-1.;
+  if (_Monte){
+    ptHat=mctruth.event_scale();
+    //cout << "Pt of hard scatter: " << ptHat << endl;
+  }
 
   fillHist("Nevents",0.0);
 
@@ -133,7 +141,7 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
   trig_iter=hltTriggerMap.find(_HLTPath);
   if (trig_iter==hltTriggerMap.end()){
     std::cout << "%HLTJetAnalysis -- Could not find trigger with pathname: " << _HLTPath << std::endl;
-    return;
+    //return;
   }else{
     hlttrig=trig_iter->second;
   }
@@ -168,10 +176,9 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
   // fill CaloTower hists
   fillCaloTowerHists(caloTowers);
 
-
-  //doL1Analysis(mycalojets,l1jets);
-  L1Analysis(mycalojets,mygenjets,l1jets);
-
+  if (doL1Jets && doCaloJets && doGenJets)
+    L1Analysis(mycalojets,mygenjets,l1jets);
+  
   if (_Monte) fillMCParticles(mctruth);
 
 }
@@ -339,6 +346,12 @@ void HLTJetAnalysis::bookJetHistograms(const TString& prefix) {
   hname=prefix + "pt_Barrel";  htitle=prefix+" Jet p_{T} -- |#eta| < " + ch_eta.str();
   m_HistNames[hname] = new TH1F(hname,htitle,netbins,etmin,etmax);
 
+  hname=prefix + "pt_Endcap";  htitle=prefix+" Jet p_{T} -- 1.4 < |#eta| < 2.5 ";
+  m_HistNames[hname] = new TH1F(hname,htitle,netbins,etmin,etmax);
+  hname=prefix + "pt_Forward";  htitle=prefix+" Jet p_{T} -- |#eta| > 2.5 ";
+  m_HistNames[hname] = new TH1F(hname,htitle,netbins,etmin,etmax);
+
+
   hname=prefix + "etmax"; htitle=prefix+" Max Jet E_{T} -- |#eta| < " + ch_eta.str();
   m_HistNames[hname] = new TH1F(hname,htitle,netbins,etmin,etmax);
   hname=prefix + "ptmax"; htitle=prefix+" Max Jet p_{T} -- |#eta| < " + ch_eta.str();
@@ -420,6 +433,10 @@ template <typename T> void HLTJetAnalysis::fillJetHists(const T& jets, const TSt
 	fillHist(prefix + "pt_Barrel",jetPt);
 	if (jetEt > maxEt) maxEt = jetEt;
 	if (jetPt > maxPt) maxPt = jetPt;
+      }else if (fabs(jetEta) < etaEndcap()){
+	fillHist(prefix + "pt_Endcap",jetPt);
+      }else{
+	fillHist(prefix + "pt_Forward",jetPt);
       }
     }
   }

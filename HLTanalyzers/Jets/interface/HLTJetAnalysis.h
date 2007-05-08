@@ -42,8 +42,8 @@ typedef std::vector<std::string> MyStrings;
 
 /** \class HLTJetAnalysis
   *  
-  * $Date: 2007/03/20 16:14:51 $
-  * $Revision: 1.2 $
+  * $Date: 2007/04/10 18:38:16 $
+  * $Revision: 1.3 $
   * \author L. Apanasevich - UIC
   */
 class HLTJetAnalysis {
@@ -113,9 +113,10 @@ private:
 
 
   int evtCounter;
-  bool doGenJets, doCaloJets;
+  bool doGenJets, doCaloJets, doL1Jets;
 
   const float etaBarrel() {return 1.4;}
+  const float etaEndcap() {return 2.5;}
 
   TFile* m_file; // pointer to Histogram file
 
