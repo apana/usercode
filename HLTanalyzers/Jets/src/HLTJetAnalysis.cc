@@ -22,16 +22,21 @@ HLTJetAnalysis::HLTJetAnalysis() {
   //set parameter defaults 
   _Monte=false;
   _Debug=false;
+  _WeightXS=false;
   _EtaMin=-5.2;
   _EtaMax=5.2;
   _HistName="test.root";
+  _XSWeightFile="xxx.dat";
   _HLTPath="xxx";
-
   // initialize some variables
   _CKIN3=-999.;
   _CKIN4=-999.;
   hlttrig=false;
   hltInfoExists=false;
+  xsw=0.; xswo=-999.;
+  netbins=50;
+  etmin=0.;
+  etmax=500.;
     
 }
 
@@ -46,10 +51,13 @@ void HLTJetAnalysis::setup(const edm::ParameterSet& pSet) {
 	iParam != parameterNames.end(); iParam++ ){
     if  ( (*iParam) == "Monte" ) _Monte =  myJetParams.getParameter<bool>( *iParam );
     else if ( (*iParam) == "Debug" ) _Debug =  myJetParams.getParameter<bool>( *iParam );
+    else if ( (*iParam) == "WeightXS" ) _WeightXS =  myJetParams.getParameter<bool>( *iParam );
     else if ( (*iParam) == "EtaMin" ) _EtaMin =  myJetParams.getParameter<double>( *iParam );
     else if ( (*iParam) == "EtaMax" ) _EtaMax =  myJetParams.getParameter<double>( *iParam );
     else if ( (*iParam) == "HLTPath" ) _HLTPath =  myJetParams.getParameter<string>( *iParam );
+    else if ( (*iParam) == "HistParams" ) _HistParams  =  myJetParams.getParameter<vector<string> >( *iParam );
     else if ( (*iParam) == "HistogramFile" ) _HistName =  myJetParams.getParameter<string>( *iParam );
+    else if ( (*iParam) == "XSWeightFile" ) _XSWeightFile =  myJetParams.getParameter<string>( *iParam );
   }
 
   cout << "---------- Input Parameters ---------------------------" << endl;
@@ -59,7 +67,20 @@ void HLTJetAnalysis::setup(const edm::ParameterSet& pSet) {
   cout << "  EtaMax: " << _EtaMax << endl;    
   cout << "  HLT Path: " << _HLTPath << endl;    
   cout << "  Output histograms written to: " << _HistName << std::endl;
-  cout << "-------------------------------------------------------" << endl;  
+  unsigned int n=_HistParams.size();
+  if (n<3){
+    cout << "  Using default Histogram parameters" << endl;
+  }else{
+    netbins=atoi(_HistParams[0].c_str());
+    etmin=atof(_HistParams[1].c_str());
+    etmax=atof(_HistParams[2].c_str());
+  }
+  cout << "  pT Histogram specs: nbins= " << netbins << " ptMin= " << etmin << " ptMax= " << etmax << endl;
+  if (_WeightXS){
+    int istat=getXSWeights(_XSWeightFile);
+    if (istat<0) _WeightXS=false;
+  }
+  cout << "-------------------------------------------------------" << endl;
   // open the histogram file
 
   m_file=new TFile(_HistName.c_str(),"RECREATE");
@@ -126,11 +147,19 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
   (&genjets) ? doGenJets=true : doGenJets=false;
   (&l1jets) ? doL1Jets=true : doL1Jets=false;
 
-
-  float ptHat=-1.;
+  // initialize weights
+  xsw=1.;
+  ptHat=-1.;
   if (_Monte){
     ptHat=mctruth.event_scale();
-    //cout << "Pt of hard scatter: " << ptHat << endl;
+    if (_WeightXS) {
+      xsw=XSWeight(ptHat);
+      if (xsw != xswo){
+	xswo=xsw;
+	cout << "Pt of hard scatter: " << ptHat << " Weight: " << xsw << endl;
+      }
+      if (ptHat < 0.) return;
+    }
   }
 
   fillHist("Nevents",0.0);
@@ -183,10 +212,94 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
 
 }
 
+double HLTJetAnalysis::XSWeight(const double& pthat) {
+
+  if (pthat < 0){
+    std::cout << "%PTHAT: "<< pthat << " Returning xsweight=1" << endl;
+    return 1.;
+  }
+
+  double xsweight=0.;
+
+  for (uint ibin=0; ibin != ptmins.size(); ++ibin){ // loop over histograms
+    if (pthat > ptmins[ibin] && pthat <= ptmaxs[ibin]){
+      xsweight=xsWeight[ibin]/nevtsInBin[ibin];
+      break;
+    }
+  }
+  //cout << "PTHAT: " << pthat << "Weight: "<< xsweight << endl;
+  return xsweight;
+
+}
+
+int HLTJetAnalysis::getXSWeights(const std::string& fileName) {
+  using namespace std;
+
+  cout << " " << endl;
+  cout << "\tWill weight cross sections!" << endl;
+  cout << "\tCross section weights and events obtained from: " << fileName << endl;
+  cout << " " << endl;
+  int istat=0; //assume success
+
+  std::string CommentLine="#"; // treat lines that begin with "#" as comment lines
+  ifstream in;
+
+  string input_line,word;
+
+  in.open(fileName.c_str());
+  if (!in){
+    cerr << "%Could not open file: " << fileName << endl;
+    cerr << "%Terminating program" << endl;
+    return -1;
+  }
+
+  //  while (1) {
+  while (getline(in,input_line)){
+
+    if (!in.good()) break;
+
+    uint p1 = input_line.find (CommentLine,0);
+    if ( p1 == std::string::npos){
+      istringstream stream(input_line);
+      std::vector<string> elements;
+
+      while (stream >> word) {
+	elements.push_back(word);
+      }
+      if (elements.size() >= 4){
+	ptmins.push_back(atof(elements[0].c_str()));
+	ptmaxs.push_back(atof(elements[1].c_str()));
+	xsWeight.push_back(atof(elements[2].c_str()));
+	nevtsInBin.push_back(atoi(elements[3].c_str()));
+      } 
+      else {
+	cout << "Error parsing input filelist" << endl;
+	return -1;
+      }
+    }
+
+  }
+
+  cout << "\t PtBin   XS   Events" << endl;
+  for (uint ibin=0; ibin != ptmins.size(); ++ibin){ // loop over histograms
+    cout << "\t" << ptmins[ibin]
+	 << "-" << ptmaxs[ibin]
+	 << "\t" << xsWeight[ibin]
+	 << "\t" << nevtsInBin[ibin]
+	 << endl;
+  }
+  return istat;
+
+}
+
+
 void HLTJetAnalysis::getHLTResults(const edm::TriggerResults& hltResults) {
 
   hltInfoExists=false;
-  if (! &hltResults) return;
+  if (! &hltResults) {
+    std::cout << "%getHLTResults -- Could not find product" << std::endl;
+    return;
+  }
   hltInfoExists=true;
   
   // TriggerResults is derived from from HLTGlobalStatus
@@ -300,8 +413,8 @@ void HLTJetAnalysis::bookJetHistograms(const TString& prefix) {
   TString h_EtaRng= ch_etamin.str() + " < #eta < " + ch_etamax.str();
   
   // book rec and gen jet histograms
-  Int_t netbins=40, nengbins=100;
-  Double_t etmin=0.,etmax=400.,engmin=0.,engmax=500.;
+  Int_t nengbins=100;
+  Double_t engmin=0.,engmax=500.;
 
   hname=prefix + "et"; htitle=prefix+" Jet E_{T} -- " + h_EtaRng;
   m_HistNames[hname]= new TH1F(hname,htitle,netbins,etmin,etmax);
@@ -401,8 +514,8 @@ template <typename T> void HLTJetAnalysis::fillJetHists(const T& jets, const TSt
 
       // HLT histograms
       if (hltInfoExists){
-	fillHist(prefix + "pt_Untriggered",jetPt);
-	if (leading) fillHist(prefix + "pt_Leading_Untriggered",jetPt);
+	fillHist(prefix + "pt_Untriggered",jetPt,xsw);
+	if (leading) fillHist(prefix + "pt_Leading_Untriggered",jetPt,xsw);
 	//loop over triggers
 	std::map<std::string,bool>::const_iterator titer=hltTriggerMap.begin();
 	while (titer != hltTriggerMap.end()){
@@ -410,8 +523,8 @@ template <typename T> void HLTJetAnalysis::fillJetHists(const T& jets, const TSt
 	  TString hname_leading=prefix + "pt_Leading_" + titer->first;
 	  bool triggered=titer->second;
 	  if (triggered) {
-	    fillHist(hname,jetPt);
-	    if (leading) fillHist(hname_leading,jetPt);
+	    fillHist(hname,jetPt,xsw);
+	    if (leading) fillHist(hname_leading,jetPt,xsw);
 	  }
 	  ++titer;
 	}

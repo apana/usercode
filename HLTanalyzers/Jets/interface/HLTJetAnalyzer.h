@@ -22,6 +22,6 @@ private:
   HLTJetAnalysis jet_analysis_;
   std::string recjets_,genjets_,recmet_,genmet_,calotowers_,hltobj_,hltresults_;
   edm::InputTag l1CollectionsTag_;
-  int errCnt;
+  int errCnt1,errCnt2;
   const int errMax(){return 100;}
 };

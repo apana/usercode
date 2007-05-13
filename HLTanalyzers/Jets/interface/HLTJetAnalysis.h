@@ -42,8 +42,8 @@ typedef std::vector<std::string> MyStrings;
 
 /** \class HLTJetAnalysis
   *  
-  * $Date: 2007/04/10 18:38:16 $
-  * $Revision: 1.3 $
+  * $Date: 2007/05/08 08:36:52 $
+  * $Revision: 1.4 $
   * \author L. Apanasevich - UIC
   */
 class HLTJetAnalysis {
@@ -99,6 +99,8 @@ public:
   void bookHLTHistograms();
   void bookL1Histograms();
 
+  int getXSWeights(const std::string& FileName);
+  double XSWeight(const double& pthat);
   void getHLTResults(const edm::TriggerResults& hltResults);
   void getHLTParticleInfo(const HLTFilterObjectWithRefs& hltobj);
 
@@ -106,11 +108,12 @@ private:
 
   // input variables
   string _HistName; // Name of histogram file
+  string _XSWeightFile; // Name of file containing cross section weights
   string _HLTPath; // Name of trigger path to analyze
-  bool _Monte,_Debug;
+  bool _Monte,_Debug,_WeightXS;
   double _EtaMin,_EtaMax;
   double _CKIN3, _CKIN4;
-
+  vector<string> _HistParams;
 
   int evtCounter;
   bool doGenJets, doCaloJets, doL1Jets;
@@ -141,6 +144,17 @@ private:
   bool hltInfoExists;
   bool evtTriggered;
 
+
+  Double_t xsw,xswo;
+  float ptHat;
+
+  vector<double>ptmins;
+  vector<double>ptmaxs;
+  vector<double>xsWeight;
+  vector<int>nevtsInBin;
+
+  int netbins;
+  double etmin,etmax;
 };
 
 #endif

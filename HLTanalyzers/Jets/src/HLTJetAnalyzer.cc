@@ -21,8 +21,8 @@ HLTJetAnalyzer::HLTJetAnalyzer(edm::ParameterSet const& conf) {
   l1CollectionsTag_     = conf.getParameter< edm::InputTag > ("l1collections");
   calotowers_ = conf.getParameter< std::string > ("calotowers");
   hltobj_    = conf.getParameter< std::string > ("hltobj");
-  errCnt=0;
-
+  errCnt1=0;
+  errCnt2=0;
   jet_analysis_.setup(conf);
 
 }
@@ -59,6 +59,7 @@ void HLTJetAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
   // Extract Data objects (event fragments)
   // make sure to catch exceptions if they don't exist...
   string errMsg("");
+  string trgMsg("");
   try {iEvent.getByLabel(recjets_,recjets);} catch (...) { errMsg=errMsg + "  -- No RecJets";}
   try {iEvent.getByLabel(recmet_,recmet);} catch (...) {errMsg=errMsg + "  -- No RecMET";}
   try {iEvent.getByLabel(calotowers_,caloTowers);} catch (...) {errMsg=errMsg + "  -- No CaloTowers";}
@@ -77,7 +78,31 @@ void HLTJetAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
   }
 
   try {
-    iEvent.getByType(hltresults);
+    //iEvent.getByType(hltresults);
+    //void Event::getManyByType( std::vector<edm::Handle<T> >& result) 
+    std::vector<edm::Handle<edm::TriggerResults> > vTrigResults ;
+    iEvent.getManyByType( vTrigResults ) ;
+    //std::cout << "Number of TrigResults objects" << vTrigResults.size() << std::endl;
+    if (vTrigResults.size()==1){
+      hltresults=vTrigResults[0];
+    }else{
+      std::ostringstream nobj;
+      nobj << vTrigResults.size() ;
+      trgMsg="Multiple ( " + nobj.str() + " ) TriggerResults objects found\n" ;
+      for (unsigned int i = 0; i < vTrigResults.size(); ++i) {
+    	hltresults=vTrigResults[i];
+    	//std::cout << hltresults.provenance()->moduleLabel() << std::endl;
+    	//std::cout << hltresults.provenance()->moduleName() << std::endl;
+    	//std::cout << hltresults.provenance()->processName() << std::endl;
+    	//std::cout << "BranchName: " << hltresults.provenance()->branchName() << std::endl;
+	trgMsg=trgMsg + "BranchName: " + hltresults.provenance()->branchName() + "\n";
+    	//if ((HepMCEvt.provenance()->product).moduleLabel() == "VtxSmeared")
+    	//  break;
+      }     
+      hltresults=vTrigResults[0];
+      //std::cout << "Using: " << hltresults.provenance()->branchName() << std::endl;
+      trgMsg=trgMsg + "Using: " + hltresults.provenance()->branchName() + "\n";
+    }
   } catch (...) {
     errMsg=errMsg + "  -- No HLTRESULTS";
   }
@@ -103,12 +128,21 @@ void HLTJetAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
     errMsg=errMsg + "  -- No GenMet";
   }
 
-  if ((errMsg != "") && (errCnt < errMax())){
-    errCnt=errCnt+1;
+  if ((errMsg != "") && (errCnt1 < errMax())){
+    errCnt1=errCnt1+1;
     errMsg=errMsg + ".";
     std::cout << "%HLTJetAnalyzer-Warning" << errMsg << std::endl;
-    if (errCnt == errMax()){
-      errMsg="%HLTJetAnalyzer-Warning -- Maximum error count reached -- No more messages will be printed.";
+    if (errCnt1 == errMax()){
+      errMsg="%HLTJetAnalyzer-Warning -- Maximum error1 count reached -- No more messages will be printed.";
+      std::cout << errMsg << std::endl;    
+    }
+  }
+
+  if ((trgMsg != "") && (errCnt2 < errMax())){
+    errCnt2=errCnt2+1;
+    std::cout << trgMsg << std::endl;
+    if (errCnt2 == errMax()){
+      errMsg="%HLTJetAnalyzer-Warning -- Maximum error2 count reached -- No more messages will be printed.";
       std::cout << errMsg << std::endl;    
     }
   }
