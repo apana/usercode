@@ -164,19 +164,20 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
 
   fillHist("Nevents",0.0);
 
-  evtTriggered=false;
+  evtTriggered=false; hlttrig=false;
   getHLTResults(hltresults);
-  if (evtTriggered)fillHist("Nevents",1.0); // fill Nevents histogram if at least one trigger fired
-  trig_iter=hltTriggerMap.find(_HLTPath);
-  if (trig_iter==hltTriggerMap.end()){
-    std::cout << "%HLTJetAnalysis -- Could not find trigger with pathname: " << _HLTPath << std::endl;
-    //return;
-  }else{
-    hlttrig=trig_iter->second;
+  if (hltInfoExists){
+    if (evtTriggered)fillHist("Nevents",1.0); // fill Nevents histogram if at least one trigger fired
+    trig_iter=hltTriggerMap.find(_HLTPath);
+    if (trig_iter==hltTriggerMap.end()){
+      std::cout << "%HLTJetAnalysis -- Could not find trigger with pathname: " << _HLTPath << std::endl;
+      return;
+    }else{
+      hlttrig=trig_iter->second;
+    }
+    
+    getHLTParticleInfo(hltobj);
   }
-
-  getHLTParticleInfo(hltobj);
-
 
   if (hlttrig)fillHist("Nevents",2.0); // fill Nevents histogram if desired trigger fired
 
