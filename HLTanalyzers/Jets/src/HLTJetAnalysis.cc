@@ -133,7 +133,8 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
 			      const CaloMETCollection& recmets,
 			      const GenMETCollection& genmets,
 			      const CaloTowerCollection& caloTowers,
-			      const HepMC::GenEvent mctruth,
+			      const edm::Handle<CandidateCollection>& genParticles,
+			      const HepMC::GenEvent& genEvent,
 			      const HLTFilterObjectWithRefs& hltobj,
 			      const edm::TriggerResults& hltresults,
 			      const l1extra::L1JetParticleCollection& l1jets,
@@ -151,7 +152,7 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
   xsw=1.;
   ptHat=-1.;
   if (_Monte){
-    ptHat=mctruth.event_scale();
+    ptHat=genEvent.event_scale();
     if (_WeightXS) {
       xsw=XSWeight(ptHat);
       if (xsw != xswo){
@@ -209,7 +210,7 @@ void HLTJetAnalysis::analyze( const CaloJetCollection& calojets,
   if (doL1Jets && doCaloJets && doGenJets)
     L1Analysis(mycalojets,mygenjets,l1jets);
   
-  if (_Monte) fillMCParticles(mctruth);
+  if (_Monte) fillMCParticles(genParticles);
 
 }
 
@@ -305,6 +306,10 @@ void HLTJetAnalysis::getHLTResults(const edm::TriggerResults& hltResults) {
   
   // TriggerResults is derived from from HLTGlobalStatus
   int ntrigs=hltResults.size();  
+
+  edm::TriggerNames triggerNames(hltResults);
+  //hlNames_=hltResults.triggerNames();
+
   if (_Debug) std::cout << "%getHLTResults --  Number of HLT Triggers: " << ntrigs << std::endl;
 
   TString hname,htitle;
@@ -321,8 +326,10 @@ void HLTJetAnalysis::getHLTResults(const edm::TriggerResults& hltResults) {
   }
   //hid->second->Fill(value,wt); 
 
+  
   for (int itrig = 0; itrig != ntrigs; ++itrig){
-    string trigName=hltResults.name(itrig);
+    //string trigName=hltResults.name(itrig);
+    string trigName = triggerNames.triggerName(itrig);
     if ( justBooked ) {
       m_HistNames[hname]->GetXaxis()->SetBinLabel(itrig+1,trigName.c_str());
       // book jet histograms
@@ -810,28 +817,31 @@ void HLTJetAnalysis::bookMCParticles(){
   }
 }
 
-void HLTJetAnalysis::fillMCParticles(const HepMC::GenEvent mctruth){
+void HLTJetAnalysis::fillMCParticles(edm::Handle<CandidateCollection> genParticles){
 
   // return for null mctruth collection
-  if (! &mctruth) return;
+  if (! &genParticles) return;
 
-  for (HepMC::GenEvent::particle_const_iterator partIter = mctruth.particles_begin(); partIter != mctruth.particles_end();
-         ++partIter) {
+  for (size_t i =0;i< genParticles->size(); i++) {
 
-    // Find the end vertex
-    //   for (HepMC::GenEvent::vertex_const_iterator vertIter = mctruth.vertices_begin();
-    //   vertIter != mctruth.vertices_end();
-    //    ++vertIter) {
-       CLHEP::HepLorentzVector creation = (*partIter)->CreationVertex();
-       CLHEP::HepLorentzVector momentum = (*partIter)->Momentum();
-       HepPDT::ParticleID id = (*partIter)->particleID();  // electrons and positrons are 11 and -11
-       //   cout << "MC particle id " << id.pid() << ", creationVertex " << creation << " cm, initialMomentum " << momentum << " GeV/c" << endl;   
-       fillHist("Pid00",id.pid()); 
-       fillHist("VertexX00",creation.x());  
-       fillHist("VertexY00",creation.y());  
-       fillHist("VertexZ00",creation.z());  
+    const Candidate &p = (*genParticles)[i];
 
-       fillHist("Pt00",momentum.perp());
+    int Status =  p.status();
+    bool ParticleIsStable = Status==1;
+      
+    if(ParticleIsStable){
+      math::XYZVector vertex(p.vx(),p.vy(),p.vz());
+      math::XYZTLorentzVector momentum=p.p4();
+      int id = p.pdgId();  
+      //cout << "MC particle id " << id << ", creationVertex " << vertex << " cm, initialMomentum " << momentum << " GeV/c" << endl;  
+    
+       fillHist("Pid00",id); 
+       fillHist("VertexX00",vertex.x());  
+       fillHist("VertexY00",vertex.y());  
+       fillHist("VertexZ00",vertex.z());  
+
+       fillHist("Pt00",momentum.pt());
+    }
   }
 }
 

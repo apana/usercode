@@ -13,7 +13,6 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ConstProductRegistry.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "DataFormats/Common/interface/ProductID.h"
 
 #include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/JetReco/interface/CaloJetfwd.h"
@@ -38,12 +37,14 @@
 #include "DataFormats/L1Trigger/interface/L1ParticleMapFwd.h"
 #include "DataFormats/L1Trigger/interface/L1JetParticleFwd.h"
 
+#include "FWCore/Framework/interface/TriggerNames.h"
+
 typedef std::vector<std::string> MyStrings;
 
 /** \class HLTJetAnalysis
   *  
-  * $Date: 2007/05/08 08:36:52 $
-  * $Revision: 1.4 $
+  * $Date: 2007/05/13 12:02:38 $
+  * $Revision: 1.5 $
   * \author L. Apanasevich - UIC
   */
 class HLTJetAnalysis {
@@ -61,7 +62,8 @@ public:
 	       const CaloMETCollection& rmets,
 	       const GenMETCollection& gmets,
 	       const CaloTowerCollection& caloTowers,
-	       const HepMC::GenEvent mctruth,
+	       const edm::Handle<CandidateCollection>& genParticles,
+	       const HepMC::GenEvent& genEvent,
 	       const HLTFilterObjectWithRefs& hltobj,
 	       const edm::TriggerResults& hltresults,
 	       const l1extra::L1JetParticleCollection& l1jets,
@@ -94,7 +96,7 @@ public:
 				    const T& jets, const TString&);
 
   void bookMCParticles();
-  void fillMCParticles(const HepMC::GenEvent mctruth);
+  void fillMCParticles(edm::Handle<CandidateCollection> genParticles);
 
   void bookHLTHistograms();
   void bookL1Histograms();

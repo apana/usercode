@@ -45,7 +45,9 @@ void HLTJetAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
   edm::Handle<CaloTowerCollection> caloTowers;
   edm::Handle<CaloMETCollection> recmet;
   edm::Handle<GenMETCollection> genmet;
-  edm::Handle<edm::HepMCProduct> mctruthHandle;
+  //edm::Handle<edm::HepMCProduct> mctruthHandle;
+  edm::Handle<edm::HepMCProduct> genEventHandle;
+  edm::Handle<CandidateCollection> genParticles;
 
   edm::Handle<HLTFilterObjectWithRefs> hltobj;
   //  edm::Handle<std::vector<edm::HLTPathStatus> > hltresults;
@@ -108,10 +110,11 @@ void HLTJetAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
   }
 
   // MC objects
-  HepMC::GenEvent mctruth;
+  HepMC::GenEvent genEvent;
   try {
-    iEvent.getByLabel("VtxSmeared", "", mctruthHandle);
-    mctruth = mctruthHandle->getHepMCData(); 
+    iEvent.getByLabel("source","",genEventHandle);
+    genEvent = genEventHandle->getHepMCData();
+    iEvent.getByLabel("genParticleCandidates",genParticles);
   } catch (...) {
     errMsg=errMsg + "  -- No MC truth";
   }
@@ -151,7 +154,7 @@ void HLTJetAnalyzer::analyze(edm::Event const& iEvent, edm::EventSetup const& iS
   //
   jet_analysis_.analyze(*recjets,*genjets,
 			*recmet,*genmet,
-			*caloTowers,mctruth,
+			*caloTowers,genParticles,genEvent,
 			*hltobj,*hltresults,
 			*l1jets,
 			*geometry);
