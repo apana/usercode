@@ -52,12 +52,10 @@ private:
   bool doCaloJets,doGenJets,doCaloMET,doGenMET;
   bool doL1Jets;
 
-  TH1F ptCal, etaCal, phiCal;
-  TH1F ptGen, etaGen, phiGen;
-
-  TH1F MetPt, genMetPt;
-
   TFile* m_file;
+
+  TH1F* evtCounter;
+
 
   // use the map function to access the rest of the histograms
   std::map<TString, TH1*> m_HistNames;

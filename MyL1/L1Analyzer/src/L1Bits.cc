@@ -20,7 +20,7 @@ void L1Bits::beginJob( const EventSetup & ) {
 
   // Open the histogram file and book some associated histograms
   m_file=new TFile(histogram.c_str(),"RECREATE");
-
+  evtCounter=new TH1F("EventCounter","Event Counter",5,0.,5.);
 }
 
 void L1Bits::analyze( const Event& evt, const EventSetup& es ) {
@@ -28,10 +28,11 @@ void L1Bits::analyze( const Event& evt, const EventSetup& es ) {
   string errMsg("");
 
   //Get the collections
-
+  evtCounter->Fill(0.,1.);
   edm::Handle<l1extra::L1ParticleMapCollection> l1mapcoll;
   try {evt.getByLabel(particleMapSource_,l1mapcoll );} catch (...) { errMsg=errMsg + "  -- No L1 Map Collection";}
 
+  
   L1Analysis(*l1mapcoll);
 
 }
@@ -42,10 +43,13 @@ void L1Bits::L1Analysis(const l1extra::L1ParticleMapCollection& L1MapColl) {
   //cout << "%doL1Analysis -- Number of l1bits:   " << L1MapColl.size() << endl;
   //cout << "%doL1Analysis -- Number of l1bits:   " << l1extra::L1ParticleMap::kNumOfL1TriggerTypes << endl;
 
+  int nacc=0;
   for (int itrig = 0; itrig != L1MapColl.size() ; ++itrig){
     const l1extra::L1ParticleMap& map = ( L1MapColl )[ itrig ] ;
     bool accept = map.triggerDecision();
     string trigName = map.triggerName();
+
+    if (accept)nacc++;
 
     m_iter=m_bits.find(trigName);
     if (m_iter==m_bits.end()){
@@ -56,7 +60,7 @@ void L1Bits::L1Analysis(const l1extra::L1ParticleMapCollection& L1MapColl) {
       m_iter->second=nacc;
     }
   }
-
+  if (nacc>0) evtCounter->Fill(1.,1.);
 }
 
 void L1Bits::endJob() {
