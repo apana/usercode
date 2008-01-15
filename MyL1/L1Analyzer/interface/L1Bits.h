@@ -42,8 +42,9 @@ private:
 
   void L1Analysis(const l1extra::L1ParticleMapCollection& l1mapcoll);
 
+  std::string histogram, text_output;
+  InputTag particleMapSource_;
 
-  std::string histogram, particleMapSource_, text_output;
 
   int errCnt;
   const int errMax(){return 100;}

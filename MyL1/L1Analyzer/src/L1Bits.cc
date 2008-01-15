@@ -10,7 +10,7 @@
 // which defines the value of the strings CaloJetAlgorithm and GenJetAlgorithm.
 L1Bits::L1Bits( const ParameterSet & cfg ) {
   cout << " Beginning L1Jet Analysis " << endl;
-  particleMapSource_= cfg.getParameter< string > ("particleMapSource");
+  particleMapSource_= cfg.getParameter< edm::InputTag > ("particleMapSource");
   histogram        = cfg.getParameter<string>( "Histogram" );
   text_output      = cfg.getParameter<string>( "Outfile" );
   errCnt=0;
@@ -44,7 +44,7 @@ void L1Bits::L1Analysis(const l1extra::L1ParticleMapCollection& L1MapColl) {
   //cout << "%doL1Analysis -- Number of l1bits:   " << l1extra::L1ParticleMap::kNumOfL1TriggerTypes << endl;
 
   int nacc=0;
-  for (int itrig = 0; itrig != L1MapColl.size() ; ++itrig){
+  for (unsigned int itrig = 0; itrig != L1MapColl.size() ; ++itrig){
     const l1extra::L1ParticleMap& map = ( L1MapColl )[ itrig ] ;
     bool accept = map.triggerDecision();
     string trigName = map.triggerName();
@@ -64,6 +64,9 @@ void L1Bits::L1Analysis(const l1extra::L1ParticleMapCollection& L1MapColl) {
 }
 
 void L1Bits::endJob() {
+
+  double ntot=evtCounter->GetBinContent(1);
+  double nacc=evtCounter->GetBinContent(2);
 
   ofstream ofile;
   ofile.open (text_output.c_str());
@@ -85,6 +88,11 @@ void L1Bits::endJob() {
     h->SetBinError(ibin,sqrt(m_iter->second));
     ++m_iter;
   }
+
+  ofile << "\n";
+  ofile << "Number of Events Processed  : " << ntot << "\n";
+  ofile << "Number of L1 Accepted Events: " << nacc << "\n";
+  ofile << "                      Ratio : " << nacc/ntot << endl;
 
   ofile.close();
 
