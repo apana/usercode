@@ -12,7 +12,7 @@ L1Bits::L1Bits( const ParameterSet & cfg ) {
   cout << " Beginning L1Jet Analysis " << endl;
   particleMapSource_= cfg.getParameter< string > ("particleMapSource");
   histogram        = cfg.getParameter<string>( "Histogram" );
-
+  text_output      = cfg.getParameter<string>( "Outfile" );
   errCnt=0;
 }
 
@@ -65,7 +65,11 @@ void L1Bits::L1Analysis(const l1extra::L1ParticleMapCollection& L1MapColl) {
 
 void L1Bits::endJob() {
 
+  ofstream ofile;
+  ofile.open (text_output.c_str());
+
   cout << "Number of L1 Triggers: " << m_bits.size() << endl;
+  ofile << "Number of L1 Triggers: " << m_bits.size() << endl;
   TH1F *h = new TH1F("TriggerBits","L1 Trigger Bits",m_bits.size(),0.,m_bits.size());
 
   m_iter = m_bits.begin();
@@ -73,6 +77,8 @@ void L1Bits::endJob() {
   while (m_iter != m_bits.end()){
     ibin++;
     cout << m_iter->first << ":\t" << m_iter->second << endl;
+    ofile << m_iter->first << ":\t" << m_iter->second << endl;
+
     const char* trigName =  m_iter->first.c_str();
     h->GetXaxis()->SetBinLabel(ibin,trigName);
     h->SetBinContent(ibin,m_iter->second);
@@ -80,6 +86,7 @@ void L1Bits::endJob() {
     ++m_iter;
   }
 
+  ofile.close();
 
   //Write out the histogram file.
   m_file->Write();
