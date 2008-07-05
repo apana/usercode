@@ -1,0 +1,16 @@
+<use name=root>
+<use name=FWCore/Framework>
+<use name=Foundation/PluginManager>
+<use name=FWCore/ParameterSet>
+<use name=DataFormats/HepMCCandidate>
+<use name=SimDataFormats/HepMCProduct>
+<flags EDM_PLUGIN=1>
+<export>
+  <lib name=MyGENGenAnalyzes>
+  <use name=FWCore/Framework>
+  <use name=Foundation/PluginManager>
+  <use name=FWCore/ParameterSet>
+  <use name=root>
+  <use name=DataFormats/HepMCCandidate>
+  <use name=SimDataFormats/HepMCProduct>
+</export>
