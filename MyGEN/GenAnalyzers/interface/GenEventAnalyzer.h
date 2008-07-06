@@ -1,5 +1,10 @@
 #ifndef Examples_GenEventAnalyzer_h
 #define Examples_GenEventAnalyzer_h
+
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "PhysicsTools/UtilAlgos/interface/TFileService.h"
+
 #include <TH1.h>
 #include <TROOT.h>
 #include <TSystem.h>
@@ -28,12 +33,14 @@ private:
   void getGENINFO(const reco::CandidateView&, const double);
 
   edm::InputTag mctruth_, genEventScale_;
-  std::string HistoFile_;
+  //std::string HistoFile_;
 
-  TH1F h_evtCounter, h_ptHat;
-  TH1F h_mxElePt,h_mxMuPt,h_mxTauPt;
-  TH1F h_dimuonMass;
-  TFile* m_file;
+  edm::Service<TFileService> fs;
+
+  TH1F *h_evtCounter, *h_ptHat;
+  TH1F *h_mxElePt,*h_mxMuPt,*h_mxTauPt;
+  TH1F *h_dimuonMass;
+  //TFile* m_file;
 
   // store hlt information in a map
 //    std::vector<bool> hlttrigs;

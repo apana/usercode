@@ -13,32 +13,33 @@ using namespace std;
 // which defines the value of the strings CaloJetAlgorithm and GenJetAlgorithm.
 GenEventAnalyzer::GenEventAnalyzer( const ParameterSet & cfg ) :
   mctruth_(cfg.getParameter<InputTag> ("mctruth") ),
-  genEventScale_( cfg.getParameter<InputTag> ("genEventScale") ),
-  HistoFile_( cfg.getParameter<string>( "Histogram" ) )
+  genEventScale_( cfg.getParameter<InputTag> ("genEventScale") )
+  //HistoFile_( cfg.getParameter<string>( "Histogram" ) )
   {
 }
 
 void GenEventAnalyzer::beginJob( const EventSetup & ) {
 
   // Open the histogram file and book some associated histograms
-  m_file=new TFile(HistoFile_.c_str(),"RECREATE");
+  //m_file=new TFile(HistoFile_.c_str(),"RECREATE");
 
-  h_evtCounter    =  TH1F( "evtCounter",  "Event Counter", 10, -0.5, 9.5 );
-  h_ptHat         =  TH1F( "ptHat",   "p_{T} Hat of Hard Scatter", 1000, 0.0, 1000. );
+  h_evtCounter    =  fs->make<TH1F>( "evtCounter",  "Event Counter", 10, -0.5, 9.5 );
+  h_ptHat         =  fs->make<TH1F>( "ptHat",   "p_{T} Hat of Hard Scatter", 1000, 0.0, 1000. );
 
   int npbins=200;
   double ptmin=0., ptmax=100.;
-  h_mxElePt       =  TH1F( "ptEleMX", "p_{T} of Leading Electron", npbins, ptmin, ptmax );
-  h_mxMuPt        =  TH1F( "ptMuMX" , "p_{T} of Leading Muon"    , npbins, ptmin, ptmax );
-  h_mxTauPt       =  TH1F( "ptTauMX", "p_{T} of Leading Tau"     , npbins, ptmin, ptmax );
+  h_mxElePt       =  fs->make<TH1F>( "ptEleMX", "p_{T} of Leading Electron", npbins, ptmin, ptmax );
+  h_mxMuPt        =  fs->make<TH1F>( "ptMuMX" , "p_{T} of Leading Muon"    , npbins, ptmin, ptmax );
+  h_mxTauPt       =  fs->make<TH1F>( "ptTauMX", "p_{T} of Leading Tau"     , npbins, ptmin, ptmax );
 
   int nmbins=200;
   double mmin=0., mmax=200.;
-  h_dimuonMass    =  TH1F( "dimuonMass", "Di-Muon Invariant Mass", nmbins, mmin, mmax );
+  h_dimuonMass    =  fs->make<TH1F>( "dimuonMass", "Di-Muon Invariant Mass", nmbins, mmin, mmax );
 }
 
 void GenEventAnalyzer::analyze( const Event& evt, const EventSetup& es ) {
 
+  // cout << "Beginning GenEventAnalyzer::analyze" << endl;
   bool gotGEN=true;
 
   Handle<CandidateView> mctruth,mctruthDummy;
@@ -50,9 +51,9 @@ void GenEventAnalyzer::analyze( const Event& evt, const EventSetup& es ) {
   double pthat=*genEventScale;
   if (! mctruth.isValid() ) { cout << "  -- No Gen Particles"; gotGEN=false;}
 
-  h_evtCounter.Fill(0.); // count number of events processed
+  h_evtCounter->Fill(0.); // count number of events processed
   if (gotGEN) {
-    h_evtCounter.Fill(1.); 
+    h_evtCounter->Fill(1.); 
     getGENINFO(*mctruth,pthat);
   }
 
@@ -62,13 +63,13 @@ void GenEventAnalyzer::analyze( const Event& evt, const EventSetup& es ) {
 
 void GenEventAnalyzer::getGENINFO(const CandidateView& mctruth ,const double pthat) {
 
-  //cout << "Beginning getGENINFO" << endl;
-  h_ptHat.Fill(pthat); 
+  //cout << "Beginning GenEventAnalyzer::getGENINFO" << endl;
+  h_ptHat->Fill(pthat); 
 
 
   if (&mctruth){
 
-    double ptEleMX=0.,ptMuMX=0.,ptTauMX=0.;
+    double ptEleMX=-1.,ptMuMX=-1.,ptTauMX=-1.;
     vector<math::XYZTLorentzVector> muonP4,eleP4,tauP4;
     vector<math::XYZTLorentzVector>::iterator iter1, iter2;
 
@@ -91,22 +92,25 @@ void GenEventAnalyzer::getGENINFO(const CandidateView& mctruth ,const double pth
 	} 
       }
     } // end for loop over generated particles
-    h_mxElePt.Fill(ptEleMX); 
-    h_mxMuPt.Fill(ptMuMX); 
-    h_mxTauPt.Fill(ptTauMX); 
+    if (ptEleMX > 0.) h_mxElePt->Fill(ptEleMX); 
+    if (ptMuMX > 0.) h_mxMuPt->Fill(ptMuMX); 
+    if (ptTauMX > 0.) h_mxTauPt->Fill(ptTauMX); 
 
-    for(iter1=muonP4.begin(); iter1<muonP4.end()-1; iter1++){
-      math::XYZTLorentzVector m1 = *iter1;
-      for(iter2=iter1+1; iter2<muonP4.end(); iter2++){
-	  math::XYZTLorentzVector m2 = *iter2;
-	  double mass = (m1+m2).mass();
-	  h_dimuonMass.Fill(mass); 
-      }
+    if (muonP4.size() >1 ){
+      for(iter1=muonP4.begin(); iter1<muonP4.end()-1; iter1++){
+        math::XYZTLorentzVector m1 = *iter1;
+        for(iter2=iter1+1; iter2<muonP4.end(); iter2++){
+  	  math::XYZTLorentzVector m2 = *iter2;
+  	  double mass = (m1+m2).mass();
+  	  h_dimuonMass->Fill(mass); 
+        }// end loop2
+      }// end loop1
     }
   }
 }
 
 void GenEventAnalyzer::endJob() {
+  /*
   if (m_file !=0)
     {
     //Write the histograms to the file.
@@ -123,6 +127,7 @@ void GenEventAnalyzer::endJob() {
     delete m_file;
     m_file=0;
     }
+  */
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"
