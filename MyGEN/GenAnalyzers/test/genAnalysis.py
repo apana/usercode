@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 nevts=-1
 histofile="histogram.root"
-
+inputfile="file:/tmp/apana/HLTout_EWK_Wtaunu_GEN.root"
 process= cms.Process('ANALYSIS')
 
 process.load('FWCore/MessageService/MessageLogger_cfi')
@@ -10,7 +10,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('file:/tmp/apana/HLTout_EWK_Ztautau_GEN.root')
+    fileNames = cms.untracked.vstring(inputfile)
 )
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(nevts)

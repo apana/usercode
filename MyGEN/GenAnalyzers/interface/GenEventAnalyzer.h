@@ -31,6 +31,7 @@ private:
   void endJob();
 
   void getGENINFO(const reco::CandidateView&, const double);
+  void plotInvMass(std::vector<math::XYZTLorentzVector>&, TH1F*);
 
   edm::InputTag mctruth_, genEventScale_;
   //std::string HistoFile_;
@@ -39,7 +40,8 @@ private:
 
   TH1F *h_evtCounter, *h_ptHat;
   TH1F *h_mxElePt,*h_mxMuPt,*h_mxTauPt;
-  TH1F *h_dimuonMass;
+  TH1F *h_dieleMass,*h_dimuonMass,*h_ditauMass;
+
   //TFile* m_file;
 
   // store hlt information in a map

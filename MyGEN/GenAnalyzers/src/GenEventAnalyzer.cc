@@ -35,6 +35,8 @@ void GenEventAnalyzer::beginJob( const EventSetup & ) {
   int nmbins=200;
   double mmin=0., mmax=200.;
   h_dimuonMass    =  fs->make<TH1F>( "dimuonMass", "Di-Muon Invariant Mass", nmbins, mmin, mmax );
+  h_dieleMass    =  fs->make<TH1F>( "dieleMass", "Di-Electron Invariant Mass", nmbins, mmin, mmax );
+  h_ditauMass    =  fs->make<TH1F>( "ditauMass", "Di-Tau Invariant Mass", nmbins, mmin, mmax );
 }
 
 void GenEventAnalyzer::analyze( const Event& evt, const EventSetup& es ) {
@@ -71,7 +73,6 @@ void GenEventAnalyzer::getGENINFO(const CandidateView& mctruth ,const double pth
 
     double ptEleMX=-1.,ptMuMX=-1.,ptTauMX=-1.;
     vector<math::XYZTLorentzVector> muonP4,eleP4,tauP4;
-    vector<math::XYZTLorentzVector>::iterator iter1, iter2;
 
     for (size_t i = 0; i < mctruth.size(); ++ i) {
       const Candidate & p = (mctruth)[i];
@@ -96,17 +97,28 @@ void GenEventAnalyzer::getGENINFO(const CandidateView& mctruth ,const double pth
     if (ptMuMX > 0.) h_mxMuPt->Fill(ptMuMX); 
     if (ptTauMX > 0.) h_mxTauPt->Fill(ptTauMX); 
 
-    if (muonP4.size() >1 ){
-      for(iter1=muonP4.begin(); iter1<muonP4.end()-1; iter1++){
-        math::XYZTLorentzVector m1 = *iter1;
-        for(iter2=iter1+1; iter2<muonP4.end(); iter2++){
-  	  math::XYZTLorentzVector m2 = *iter2;
-  	  double mass = (m1+m2).mass();
-  	  h_dimuonMass->Fill(mass); 
-        }// end loop2
-      }// end loop1
-    }
+    plotInvMass(eleP4,h_dieleMass);
+    plotInvMass(muonP4,h_dimuonMass);
+    plotInvMass(tauP4,h_ditauMass);
+
   }
+}
+
+void GenEventAnalyzer::plotInvMass(vector<math::XYZTLorentzVector>& P4vec, TH1F* h) {
+
+  vector<math::XYZTLorentzVector>::iterator iter1, iter2;
+
+  if (P4vec.size() >1 ){
+    for(iter1=P4vec.begin(); iter1<P4vec.end()-1; iter1++){
+      math::XYZTLorentzVector m1 = *iter1;
+      for(iter2=iter1+1; iter2<P4vec.end(); iter2++){
+	math::XYZTLorentzVector m2 = *iter2;
+	double mass = (m1+m2).mass();
+	h->Fill(mass); 
+      }// end loop2
+    }// end loop1
+  }
+
 }
 
 void GenEventAnalyzer::endJob() {
