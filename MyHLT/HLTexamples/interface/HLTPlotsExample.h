@@ -6,6 +6,10 @@
 #include <TFile.h>
 #include <TCanvas.h>
 #include <cmath>
+
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "PhysicsTools/UtilAlgos/interface/TFileService.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -29,12 +33,13 @@ private:
 
   void getHLTResults(const edm::TriggerResults&);
 
-  edm::InputTag HLTriggerResults,CaloJetAlgorithm, GenJetAlgorithm;
-  std::string HistoFile,MyTrigger;
+  edm::Service<TFileService> fs;
 
-  TH1F h_ptCal, h_ptCalLeading, h_ptCalTrig, h_etaCalLeading, h_phiCalLeading;
-  TH1F h_TriggerResults, h_evtCounter;
-  TFile* m_file;
+  edm::InputTag HLTriggerResults,CaloJetAlgorithm;
+  std::string MyTrigger;
+
+  TH1F *h_ptCal, *h_ptCalLeading, *h_ptCalTrig, *h_etaCalLeading, *h_phiCalLeading;
+  TH1F *h_TriggerResults, *h_evtCounter;
 
   // store hlt information in a map
   std::vector<bool> hlttrigs;
