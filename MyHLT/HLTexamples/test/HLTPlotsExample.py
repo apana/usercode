@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 nevts=200
 histofile="histo.root"
-inputfile="/store/relval/CMSSW_2_1_2/RelValQCD_Pt_120_170/GEN-SIM-DIGI-RAW-HLTDEBUG-RECO/STARTUP_V5_HF_10TeV_v1/0000/0A6D28A4-6F77-DD11-B9F8-0030487A3232.root"
+inputfile="file:/uscmst1b_scratch/lpc1/lpctrig/apana/fsim/CMSSW_2_1_10/src/run/AODIntegrationTestWithHLT.root"
 
 process= cms.Process('HLTPlots')
 
@@ -24,9 +24,12 @@ process.source = cms.Source("PoolSource",
 )
 
 process.plots = cms.EDAnalyzer("HLTPlotsExample",
-                               MyTrigger = cms.string("HLT_Jet110"),
+                               # MyTrigger = cms.string("HLT_Jet110"),
+                               MyTrigger = cms.string("HLT_L1MuOpen"),
+                               # MyTrigger = cms.string("HLT_Mu3"),
                                HLTriggerResults = cms.InputTag("TriggerResults::HLT"),
-                               CaloJetAlgorithm = cms.InputTag("iterativeCone5CaloJets")
+                               CaloJetAlgorithm = cms.InputTag("iterativeCone5CaloJets"),
+                               MuonCollection   = cms.InputTag("muons")
                                )
 # paths to run
 process.p1 = cms.Path(process.plots)

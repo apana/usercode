@@ -14,6 +14,7 @@ using namespace std;
 HLTPlotsExample::HLTPlotsExample( const ParameterSet & cfg ) :
   HLTriggerResults( cfg.getParameter<InputTag>( "HLTriggerResults" ) ),
   CaloJetAlgorithm( cfg.getParameter<InputTag>( "CaloJetAlgorithm" ) ),
+  muonCollection( cfg.getParameter<InputTag>( "MuonCollection" ) ),
   MyTrigger( cfg.getParameter<string>( "MyTrigger" ) ),
   HLTinit_(false)
   {
@@ -22,12 +23,16 @@ HLTPlotsExample::HLTPlotsExample( const ParameterSet & cfg ) :
 void HLTPlotsExample::beginJob( const EventSetup & ) {
 
   h_evtCounter    =  fs->make<TH1F>( "evtCounter",  "Event Counter", 10, -0.5, 9.5 );
-  h_ptCal         =  fs->make<TH1F>( "ptCalAll",  "p_{T} of CaloJets", 100, 0, 500 );
-  h_ptCalLeading  =  fs->make<TH1F>( "ptCal",  "p_{T} of leading CaloJets", 100, 0, 500 );
+  h_ptCal         =  fs->make<TH1F>( "ptCal",  "CaloJet p_{T}", 100, 0, 500 );
+  h_ptCalLeading  =  fs->make<TH1F>( "ptCalL",  "p_{T} of leading CaloJets", 100, 0, 500 );
   h_ptCalTrig     =  fs->make<TH1F>( "ptCalTrig",  "p_{T} of leading CaloJets -- Triggered", 100, 0, 500 );
 
   h_etaCalLeading = fs->make<TH1F>( "etaCal", "#eta of leading CaloJets", 50, -3, 3 );
   h_phiCalLeading = fs->make<TH1F>( "phiCal", "#phi of leading CaloJets", 50, -M_PI, M_PI );
+
+  h_ptMuon        =  fs->make<TH1F>( "ptMuon",  "Muon p_{T}", 100, 0, 20 );
+  h_ptMuonLeading =  fs->make<TH1F>( "ptMuonL", "p_{T} of Leading Muon", 100, 0, 20 );
+  h_ptMuonTrig    =  fs->make<TH1F>( "ptMuonTrig", "p_{T} of Leading Muon -- Triggered", 100, 0, 20 );
 }
 
 void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
@@ -72,6 +77,25 @@ void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
     }
   }else{
     cout << "  -- No CaloJets" << endl;
+  }
+
+  // Get the Muon Collection
+  Handle<MuonCollection> muon,muonDummy;
+  evt.getByLabel(muonCollection,muon);
+  if (muon.isValid()) { 
+    double ptmax=-999.;
+    typedef MuonCollection::const_iterator muiter,mumax;
+    for (muiter i=muon->begin(); i!=muon->end(); i++) {
+      double mupt=i->pt();
+      if (mupt > ptmax) ptmax=mupt;
+      h_ptMuon->Fill( mupt );
+    }
+    if (ptmax > 0.){
+      h_ptMuonLeading->Fill( ptmax );
+      if (myTrig) h_ptMuonTrig->Fill( ptmax );
+    }
+  }else{
+    cout << "  -- No Muons" << endl;  
   }
 
 }
