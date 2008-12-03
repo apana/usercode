@@ -12,8 +12,17 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "DataFormats/L1Trigger/interface/L1ParticleMap.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "PhysicsTools/UtilAlgos/interface/TFileService.h"
 
+#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
+#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetup.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapFwd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMap.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
 #include <TROOT.h>
@@ -28,7 +37,6 @@
 #include <fstream>
 
 using namespace edm;
-using namespace reco;
 using namespace std;
 
 class L1Bits : public edm::EDAnalyzer {
@@ -40,35 +48,33 @@ private:
   void analyze( const edm::Event& , const edm::EventSetup& );
   void endJob();
 
-  void L1Analysis(const l1extra::L1ParticleMapCollection& l1mapcoll);
+  void doL1Analysis();
 
-  std::string histogram, text_output;
-  InputTag particleMapSource_;
+  void getL1Results(const L1GlobalTriggerReadoutRecord&,  
+		  const L1GlobalTriggerObjectMapRecord&
+		  );
+
+  edm::Service<TFileService> fs;
+
+  std::string text_output, l1AlgoName;
+  InputTag l1GtRecordInputTag, l1GtObjectMap;
 
 
   int errCnt;
+  bool initL1, initAnalysis;
+
   const int errMax(){return 100;}
 
-  void fillHist(const TString& histName, const Double_t& value, const Double_t& wt=1.0);
-  void fill2DHist(const TString& histName, const Double_t& x,const Double_t& y,const Double_t& wt=1.0);
-
-  bool doCaloJets,doGenJets,doCaloMET,doGenMET;
-  bool doL1Jets;
-
-  TFile* m_file;
-
   TH1F* evtCounter;
+  TH1F* h_L1Results, *h_L1Results2;
 
+  unsigned int numberTriggerBits;
+  static const size_t nL1BitsMax=128;
+  string algoBitToName[nL1BitsMax];
 
-  // use the map function to access the rest of the histograms
-  std::map<TString, TH1*> m_HistNames;
-  std::map<TString, TH1*>::iterator hid;
-
-  std::map<TString, TH2*> m_HistNames2D;
-  std::map<TString, TH2*>::iterator hid2D;
-
-  std::map<string, int>m_bits;
-  std::map<string, int>::iterator m_iter;
+  // use the map function to access trigger information
+  std::map <string,bool> l1TriggerMap;
+  std::map<string,bool>::iterator trig_iter;
 
 };
 

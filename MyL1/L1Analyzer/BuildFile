@@ -16,7 +16,10 @@
 <use name=DataFormats/EcalDetId>
 <use name=TBDataFormats/HcalTBObjects>
 <use name=DataFormats/L1Trigger>
+<use name=DataFormats/L1GlobalTrigger>
 <use name=SimDataFormats/HepMCProduct>
+<use name=PhysicsTools/UtilAlgos>
+<use name=FWCore/ServiceRegistry>
 <flags EDM_PLUGIN=1>
 <export>
   <lib name=MyL1L1Analyzer>
@@ -37,5 +40,6 @@
   <use name=DataFormats/EcalDetId>
   <use name=TBDataFormats/HcalTBObjects>
   <use name=DataFormats/L1Trigger>
+  <use name=DataFormats/L1GlobalTrigger>
   <use name=SimDataFormats/HepMCProduct>
 </export>

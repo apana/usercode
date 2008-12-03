@@ -12,11 +12,18 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "PhysicsTools/UtilAlgos/interface/TFileService.h"
+
 #include "MyL1/L1Analyzer/interface/L1JetPlots.h"
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
+
+#include "DataFormats/METReco/interface/CaloMET.h"
 #include "DataFormats/METReco/interface/CaloMETCollection.h"
+
+#include "DataFormats/METReco/interface/GenMET.h"
 #include "DataFormats/METReco/interface/GenMETCollection.h"
 
 #include "DataFormats/L1Trigger/interface/L1JetParticle.h"
@@ -50,11 +57,12 @@ private:
 		   const GenJetCollection&,
 		   const l1extra::L1JetParticleCollection&);
 
+  edm::Service<TFileService> fs;
+
   template <typename T> void mtchL1(const Double_t&, const Double_t&, const Double_t&, 
 				    const T& jets, const TString&);
 
-  std::string CaloJetAlgorithm, GenJetAlgorithm, recmet_,genmet_, histogram;
-  edm::InputTag l1CollectionsTag_;
+  edm::InputTag CaloJetAlgorithm, GenJetAlgorithm, recmet_,genmet_, l1CollectionsTag_;
   int errCnt;
   const int errMax(){return 100;}
 
@@ -64,12 +72,10 @@ private:
   bool doCaloJets,doGenJets,doCaloMET,doGenMET;
   bool doL1Jets;
 
-  TH1F ptCal, etaCal, phiCal;
-  TH1F ptGen, etaGen, phiGen;
+  TH1F *ptCal, *etaCal, *phiCal;
+  TH1F *ptGen, *etaGen, *phiGen;
 
-  TH1F MetPt, genMetPt;
-
-  TFile* m_file;
+  TH1F *MetPt, *genMetPt;
 
   // use the map function to access the rest of the histograms
   std::map<TString, TH1*> m_HistNames;
