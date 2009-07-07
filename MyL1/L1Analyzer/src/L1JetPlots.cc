@@ -17,6 +17,17 @@ L1JetPlots::L1JetPlots( const ParameterSet & cfg ) {
   l1CollectionsTag_= cfg.getParameter< InputTag > ("l1collections");
 
   errCnt=0;
+  nL1Jet6=0;
+  nL1Jet10=0;
+  nL1Jet15=0;
+  nL1Jet20=0;
+  nL1Jet30=0;
+  nL1Jet40=0;
+  nL1Jet50=0;
+  nL1Jet60=0;
+
+  nL1TauJet20=0;
+
 }
 
 void L1JetPlots::beginJob( const EventSetup & ) {
@@ -101,7 +112,7 @@ void L1JetPlots::analyze( const Event& evt, const EventSetup& es ) {
   Handle<GenJetCollection> genJets, genJetsDummy;
   Handle<CaloMETCollection> recmet, recmetDummy;
   Handle<GenMETCollection>  genmet, genmetDummy;
-  Handle<l1extra::L1JetParticleCollection> l1jets,l1jetsDummy;
+  Handle<l1extra::L1JetParticleCollection> l1CenJets,l1ForJets,l1TauJets,l1jetsDummy;
 
   evt.getByLabel( CaloJetAlgorithm, caloJets );
   evt.getByLabel( GenJetAlgorithm, genJets );
@@ -113,10 +124,20 @@ void L1JetPlots::analyze( const Event& evt, const EventSetup& es ) {
   if (!recmet.isValid())   { errMsg=errMsg + "  -- No RecMET" ; recmet   = recmetDummy  ; doCaloMET  =false;}
   if (!genmet.isValid())   { errMsg=errMsg + "  -- No GenMET" ; genmet   = genmetDummy  ; doGenMET   =false;}
 
-  InputTag L1JetTag(edm::InputTag(l1CollectionsTag_.label(),"Central"));
-  evt.getByLabel(L1JetTag,l1jets);
-  if (! l1jets.isValid()) { errMsg=errMsg + "  -- No L1Jets with name: " + L1JetTag.label() ;
-    l1jets = l1jetsDummy; doL1Jets=false;}
+  InputTag L1CenJetTag(edm::InputTag(l1CollectionsTag_.label(),"Central"));
+  evt.getByLabel(L1CenJetTag,l1CenJets);
+  if (! l1CenJets.isValid()) { errMsg=errMsg + "  -- No L1Jets with name: " + L1CenJetTag.label() ;
+    l1CenJets = l1jetsDummy; doL1Jets=false;}
+
+  InputTag L1ForJetTag(edm::InputTag(l1CollectionsTag_.label(),"Forward"));
+  evt.getByLabel(L1ForJetTag,l1ForJets);
+  if (! l1ForJets.isValid()) { errMsg=errMsg + "  -- No L1Jets with name: " + L1ForJetTag.label() ;
+    l1ForJets = l1jetsDummy; doL1Jets=false;}
+
+  InputTag L1TauJetTag(edm::InputTag(l1CollectionsTag_.label(),"Tau"));
+  evt.getByLabel(L1TauJetTag,l1TauJets);
+  if (! l1TauJets.isValid()) { errMsg=errMsg + "  -- No L1Jets with name: " + L1TauJetTag.label() ;
+    l1TauJets = l1jetsDummy; doL1Jets=false;}
 
 
   if (doCaloJets){
@@ -155,7 +176,7 @@ void L1JetPlots::analyze( const Event& evt, const EventSetup& es ) {
     }
   }
 
-  if (doL1Jets) L1Analysis(*caloJets,*genJets,*l1jets);
+  if (doL1Jets) L1Analysis(*caloJets,*genJets,*l1CenJets,*l1ForJets,*l1TauJets);
 
   if ((errMsg != "") && (errCnt < errMax())){
     errCnt=errCnt+1;
@@ -170,19 +191,22 @@ void L1JetPlots::analyze( const Event& evt, const EventSetup& es ) {
 }
 
 void L1JetPlots::L1Analysis(const reco::CaloJetCollection& caloJets,
-				const reco::GenJetCollection& genJets,
-				const l1extra::L1JetParticleCollection& l1Jets) {
+			    const reco::GenJetCollection& genJets,
+			    const l1extra::L1JetParticleCollection& l1CenJets,
+			    const l1extra::L1JetParticleCollection& l1ForJets,
+			    const l1extra::L1JetParticleCollection& l1TauJets
+			    ) {
 
   //CalJetIter cIter;
   //GenJetIter gIter;
 
-  //cout << "%doL1Analysis -- Number of l1jets:   " << l1Jets.size() << endl;
+  //cout << "%doL1Analysis -- Number of l1jets:   " << l1ForJets.size() << endl;
   //cout << "%doL1Analysis -- Number of calojets: " << caloJets.size() << endl;
 
 
-  fillHist("L1JetCollSize",l1Jets.size());
+  fillHist("L1JetCollSize",l1ForJets.size());
 
-  for(l1extra::L1JetParticleCollection::const_iterator l1 = l1Jets.begin(); l1 != l1Jets.end(); ++l1) {
+  for(l1extra::L1JetParticleCollection::const_iterator l1 = l1ForJets.begin(); l1 != l1ForJets.end(); ++l1) {
     
     Double_t pt_l1=l1->pt();
     Double_t eta_l1=l1->eta();
@@ -196,6 +220,29 @@ void L1JetPlots::L1Analysis(const reco::CaloJetCollection& caloJets,
     if (doCaloJets) mtchL1(eta_l1,phi_l1,pt_l1,caloJets,"_Calo");
     if (doGenJets)  mtchL1(eta_l1,phi_l1,pt_l1,genJets,"_Gen");
   }
+
+  // try to recreate the jet bits
+  double maxL1Cen=0., maxL1For=0., maxL1Tau=0.;
+  if (l1CenJets.size()>0) maxL1Cen=l1CenJets.at(0).pt();
+  if (l1ForJets.size()>0) maxL1For=l1ForJets.at(0).pt();
+  if (l1TauJets.size()>0) maxL1Tau=l1TauJets.at(0).pt();
+
+  double maxL1=maxL1Cen;
+  if (maxL1For>maxL1) maxL1=maxL1For;
+  if (maxL1Tau>maxL1) maxL1=maxL1Tau;
+
+  if (maxL1>=6.) nL1Jet6++;
+  if (maxL1>=10.) nL1Jet10++;
+  if (maxL1>=15.) nL1Jet15++;
+  if (maxL1>=20.) nL1Jet20++;
+  if (maxL1>=30.) nL1Jet30++;
+  if (maxL1>=40.) nL1Jet40++;
+  if (maxL1>=50.) nL1Jet50++;
+  if (maxL1>=60.) nL1Jet60++;
+
+  if (maxL1Tau>=20.) nL1TauJet20++;
+
+
 }
 
 template <typename T> void L1JetPlots::mtchL1(const Double_t& eta_l1, 
@@ -244,6 +291,16 @@ template <typename T> void L1JetPlots::mtchL1(const Double_t& eta_l1,
 
 void L1JetPlots::endJob() {
 
+  cout << "Number of L1 SingleJet with pT>6: " << nL1Jet6 << endl;
+  cout << "Number of L1 SingleJet with pT>10: " << nL1Jet10 << endl;
+  cout << "Number of L1 SingleJet with pT>15: " << nL1Jet15 << endl;
+  cout << "Number of L1 SingleJet with pT>20: " << nL1Jet20 << endl;
+  cout << "Number of L1 SingleJet with pT>30: " << nL1Jet30 << endl;
+  cout << "Number of L1 SingleJet with pT>40: " << nL1Jet40 << endl;
+  cout << "Number of L1 SingleJet with pT>50: " << nL1Jet50 << endl;
+  cout << "Number of L1 SingleJet with pT>60: " << nL1Jet60 << endl;
+
+  cout << "Number of L1 TauJets with pT>20: " << nL1TauJet20 << endl;
 }
 
 void L1JetPlots::fillHist(const TString& histName, const Double_t& value, const Double_t& wt) {

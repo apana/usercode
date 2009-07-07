@@ -55,7 +55,10 @@ private:
 
   void L1Analysis( const CaloJetCollection&,
 		   const GenJetCollection&,
-		   const l1extra::L1JetParticleCollection&);
+		   const l1extra::L1JetParticleCollection&,
+		   const l1extra::L1JetParticleCollection&,
+		   const l1extra::L1JetParticleCollection&
+		   );
 
   edm::Service<TFileService> fs;
 
@@ -83,6 +86,9 @@ private:
 
   std::map<TString, TH2*> m_HistNames2D;
   std::map<TString, TH2*>::iterator hid2D;
+
+  int nL1Jet6,nL1Jet10,nL1Jet15,nL1Jet20,nL1Jet30,nL1Jet40,nL1Jet50,nL1Jet60;
+  int nL1TauJet20;
 
 };
 

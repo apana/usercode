@@ -1,9 +1,7 @@
 <use name=root>
 <use name=FWCore/Framework>
-<use name=Foundation/PluginManager>
 <use name=FWCore/ParameterSet>
 <use name=Geometry/CaloGeometry>
-<use name=Geometry/CaloEventSetup>
 <use name=Geometry/Records>	
 <use name=DataFormats/JetReco>
 <use name=DataFormats/HepMCCandidate>
@@ -17,19 +15,17 @@
 <use name=TBDataFormats/HcalTBObjects>
 <use name=DataFormats/L1Trigger>
 <use name=DataFormats/L1GlobalTrigger>
-<use name=SimDataFormats/HepMCProduct>
+<use name=SimDataFormats/GeneratorProducts>
 <use name=PhysicsTools/UtilAlgos>
 <use name=FWCore/ServiceRegistry>
 <flags EDM_PLUGIN=1>
 <export>
   <lib name=MyL1L1Analyzer>
   <use name=FWCore/Framework>
-  <use name=Foundation/PluginManager>
   <use name=FWCore/ParameterSet>
   <use name=root>
   <use name=Geometry/CaloGeometry>
   <use name=Geometry/Records>
-  <use name=Geometry/CaloEventSetup>
   <use name=DataFormats/JetReco>
   <use name=DataFormats/HepMCCandidate>
   <use name=DataFormats/HcalRecHit>
@@ -41,5 +37,5 @@
   <use name=TBDataFormats/HcalTBObjects>
   <use name=DataFormats/L1Trigger>
   <use name=DataFormats/L1GlobalTrigger>
-  <use name=SimDataFormats/HepMCProduct>
+  <use name=SimDataFormats/GeneratorProducts>
 </export>
