@@ -33,10 +33,10 @@ L1JetPlots::L1JetPlots( const ParameterSet & cfg ) {
 void L1JetPlots::beginJob( const EventSetup & ) {
 
   ptCal =  fs->make<TH1F>( "ptCal",  "p_{T} of leading CaloJets", 50, 0, 500 );
-  etaCal = fs->make<TH1F>( "etaCal", "#eta of leading CaloJets", 50, -3, 3 );
+  etaCal = fs->make<TH1F>( "etaCal", "#eta of leading CaloJets", 52, -5.2, 5.2 );
   phiCal = fs->make<TH1F>( "phiCal", "#phi of leading CaloJets", 50, -M_PI, M_PI );
   ptGen =  fs->make<TH1F>( "ptGen",  "p_{T} of leading GenJets", 50, 0, 500 );
-  etaGen = fs->make<TH1F>( "etaGen", "#eta of leading GenJets", 50, -3, 3 );
+  etaGen = fs->make<TH1F>( "etaGen", "#eta of leading GenJets", 52, -5.2, 5.2 );
   phiGen = fs->make<TH1F>( "phiGen", "#phi of leading GenJets", 50, -M_PI, M_PI );
 
   int nbins=50;
@@ -52,20 +52,39 @@ void L1JetPlots::beginJob( const EventSetup & ) {
 
   Int_t nptbins=40;
   Double_t ptmin=0,ptmax=200.;
-  hname="L1JetPt"; htitle="L1 Jet p_{T} -- Central";
+  hname="L1JetPt_Cen"; htitle="L1 Jet p_{T} -- Central";
+  m_HistNames[hname] = fs->make<TH1F>( hname , htitle  , nptbins, ptmin, ptmax );
+  m_HistNames[hname]->Sumw2();
+  hname="L1JetPt_Tau"; htitle="L1 Jet p_{T} -- Tau";
+  m_HistNames[hname] = fs->make<TH1F>( hname , htitle  , nptbins, ptmin, ptmax );
+  m_HistNames[hname]->Sumw2();
+  hname="L1JetPt_For"; htitle="L1 Jet p_{T} -- Forward";
   m_HistNames[hname] = fs->make<TH1F>( hname , htitle  , nptbins, ptmin, ptmax );
   m_HistNames[hname]->Sumw2();
 
+
   Int_t nphibins=20;
   Double_t phimin=-M_PI,phimax=M_PI;
-  hname="L1JetPhi"; htitle="L1 Jet #phi -- Central";
+  hname="L1JetPhi_Cen"; htitle="L1 Jet #phi -- Central";
+  m_HistNames[hname] =  fs->make<TH1F>( hname , htitle  , nphibins, phimin, phimax );
+  m_HistNames[hname]->Sumw2();
+  hname="L1JetPhi_Tau"; htitle="L1 Jet #phi -- Tau";
+  m_HistNames[hname] =  fs->make<TH1F>( hname , htitle  , nphibins, phimin, phimax );
+  m_HistNames[hname]->Sumw2();
+  hname="L1JetPhi_For"; htitle="L1 Jet #phi --Forward";
   m_HistNames[hname] =  fs->make<TH1F>( hname , htitle  , nphibins, phimin, phimax );
   m_HistNames[hname]->Sumw2();
 
-  Int_t netabins=80;
-  Double_t etamin=-5,etamax=5.;
-  hname="L1JetEta"; htitle="L1 Jet #eta -- Central";
+
+  Int_t netabins=52;
+  Double_t etamin=-5.2,etamax=5.2;
+  hname="L1JetEta_Cen"; htitle="L1 Jet #eta -- Central";
   m_HistNames[hname] =  fs->make<TH1F>( hname , htitle  , netabins, etamin, etamax );  m_HistNames[hname]->Sumw2();
+  hname="L1JetEta_Tau"; htitle="L1 Jet #eta -- Tau";
+  m_HistNames[hname] =  fs->make<TH1F>( hname , htitle  , netabins, etamin, etamax );  m_HistNames[hname]->Sumw2();
+  hname="L1JetEta_For"; htitle="L1 Jet #eta -- Forward";
+  m_HistNames[hname] =  fs->make<TH1F>( hname , htitle  , netabins, etamin, etamax );  m_HistNames[hname]->Sumw2();
+
 
   hname="L1DeltaR_Calo"; htitle="Delta R -- L1 and CaloJets";
   m_HistNames[hname] =  fs->make<TH1F>( hname , htitle  , 100, 0., 10. );
@@ -212,13 +231,37 @@ void L1JetPlots::L1Analysis(const reco::CaloJetCollection& caloJets,
     Double_t eta_l1=l1->eta();
     Double_t phi_l1=l1->phi();
     
-    fillHist("L1JetPt",pt_l1);
-    fillHist("L1JetPhi",phi_l1);
-    fillHist("L1JetEta",eta_l1);
+    fillHist("L1JetPt_For",pt_l1);
+    fillHist("L1JetPhi_For",phi_l1);
+    fillHist("L1JetEta_For",eta_l1);
     
     // match L1 Jets with Jets
     if (doCaloJets) mtchL1(eta_l1,phi_l1,pt_l1,caloJets,"_Calo");
     if (doGenJets)  mtchL1(eta_l1,phi_l1,pt_l1,genJets,"_Gen");
+  }
+
+  for(l1extra::L1JetParticleCollection::const_iterator l1 = l1TauJets.begin(); l1 != l1TauJets.end(); ++l1) {
+    
+    Double_t pt_l1=l1->pt();
+    Double_t eta_l1=l1->eta();
+    Double_t phi_l1=l1->phi();
+    
+    fillHist("L1JetPt_Tau",pt_l1);
+    fillHist("L1JetPhi_Tau",phi_l1);
+    fillHist("L1JetEta_Tau",eta_l1);
+    
+  }
+
+  for(l1extra::L1JetParticleCollection::const_iterator l1 = l1CenJets.begin(); l1 != l1CenJets.end(); ++l1) {
+    
+    Double_t pt_l1=l1->pt();
+    Double_t eta_l1=l1->eta();
+    Double_t phi_l1=l1->phi();
+    
+    fillHist("L1JetPt_Cen",pt_l1);
+    fillHist("L1JetPhi_Cen",phi_l1);
+    fillHist("L1JetEta_Cen",eta_l1);
+    
   }
 
   // try to recreate the jet bits
