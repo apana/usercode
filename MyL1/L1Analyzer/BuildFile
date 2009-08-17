@@ -4,6 +4,7 @@
 <use name=Geometry/CaloGeometry>
 <use name=Geometry/Records>	
 <use name=DataFormats/JetReco>
+<use name=DataFormats/METReco>
 <use name=DataFormats/HepMCCandidate>
 <use name=DataFormats/CaloTowers>
 <use name=DataFormats/HcalRecHit>
@@ -27,6 +28,7 @@
   <use name=Geometry/CaloGeometry>
   <use name=Geometry/Records>
   <use name=DataFormats/JetReco>
+  <use name=DataFormats/METReco>
   <use name=DataFormats/HepMCCandidate>
   <use name=DataFormats/HcalRecHit>
   <use name=DataFormats/HcalDigi>
