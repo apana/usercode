@@ -1,9 +1,3 @@
-// JetPlotsExample.cc
-// Description:  Example of simple EDAnalyzer for jets.
-// Author: Robert M. Harris
-// Date:  28 - August - 2006
-//
-
 #include "MyL1/L1Analyzer/interface/L1Bits.h"
 
 // Get the algorithm of the jet collections we will read from the .cfg file
@@ -17,6 +11,7 @@ L1Bits::L1Bits( const ParameterSet & cfg ) {
   errCnt=0;
   initL1=false;
   initAnalysis=false;
+  h_L1Results=0;
 }
 
 void L1Bits::beginJob( const EventSetup & ) {
@@ -116,7 +111,6 @@ void L1Bits::getL1Results(const L1GlobalTriggerReadoutRecord& gtRecord,
     initL1=true;
     cout << "\n  Number of Trigger bits " << numberTriggerBits << "\n\n";
     cout << "\tBit \t L1 Algorithm " << endl;
-    //h_L1Results2 = fs->make<TH1F>( "h_L1Results2", "L1 Results 2", numberTriggerBits, 0, numberTriggerBits );
     // get ObjectMaps from ObjectMapRecord
     const std::vector<L1GlobalTriggerObjectMap>& objMapVec =  gtOMRec.gtObjectMap();
     for (std::vector<L1GlobalTriggerObjectMap>::const_iterator itMap = objMapVec.begin();
@@ -125,13 +119,11 @@ void L1Bits::getL1Results(const L1GlobalTriggerReadoutRecord& gtRecord,
       int itrig = (*itMap).algoBitNumber();
       // Get trigger names
       algoBitToName[itrig] = (*itMap).algoName();
-      cout << "\t" << itrig << "\t" << algoBitToName[itrig] << endl;
-      // h_L1Results2->GetXaxis()->SetBinLabel(itrig+1,algoBitToName[itrig].c_str());
-      
+      cout << "\t" << itrig << "\t" << algoBitToName[itrig] << endl;      
     } // end of for loop    
   } // end of if
 
-  for (unsigned int iBit = 0; iBit < numberTriggerBits; ++iBit) {     
+  for (unsigned int iBit = 0; iBit < numberTriggerBits; ++iBit) {  
 
     bool accept = dWord[iBit];
     //if (accept) h_L1Results2->Fill(float(iBit));
@@ -151,35 +143,39 @@ void L1Bits::endJob() {
   double ntot=evtCounter->GetBinContent(1);
   double nacc=evtCounter->GetBinContent(2);
 
-  ofstream ofile;
-  ofile.open (text_output.c_str());
+  if (h_L1Results){
 
-  int nbins=h_L1Results->GetNbinsX(); 
+    cout << "XXX" << endl;
+    ofstream ofile;
+    ofile.open (text_output.c_str());
 
-  cout  << "Number of L1 Triggers: " << nbins << "\n\n";
-  ofile << "Number of L1 Triggers: " << nbins << "\n\n";
+    int nbins=h_L1Results->GetNbinsX(); 
 
-  cout  << "\tL1 Algorithm \t\t # of Accepts" << "\n";
-  cout  << "\t------------ \t\t ------------" << "\n";
-  ofile << "\tL1 Algorithm \t\t # of Accepts" << "\n";
-  ofile << "\t------------ \t\t ------------" << "\n";
-  for (int ibin=0; ibin<nbins; ++ibin){
-     float cont=h_L1Results->GetBinContent(ibin+1);
-     //const char* trigName =  h_L1Results->GetXaxis()->GetBinLabel(ibin+1);
-     string trigName = string (h_L1Results->GetXaxis()->GetBinLabel(ibin+1));
+    cout  << "Number of L1 Triggers: " << nbins << "\n\n";
+    ofile << "Number of L1 Triggers: " << nbins << "\n\n";
 
-     if (!trigName.empty()){
-       cout  << "\t" << trigName << ":\t" << cont << endl;
-       ofile << "\t" << trigName << ":\t" << cont << endl;
-     }
+    cout  << "\tL1 Algorithm \t\t # of Accepts" << "\n";
+    cout  << "\t------------ \t\t ------------" << "\n";
+    ofile << "\tL1 Algorithm \t\t # of Accepts" << "\n";
+    ofile << "\t------------ \t\t ------------" << "\n";
+    for (int ibin=0; ibin<nbins; ++ibin){
+      float cont=h_L1Results->GetBinContent(ibin+1);
+      //const char* trigName =  h_L1Results->GetXaxis()->GetBinLabel(ibin+1);
+      string trigName = string (h_L1Results->GetXaxis()->GetBinLabel(ibin+1));
+      
+      if (!trigName.empty()){
+	cout  << "\t" << trigName << ":\t" << cont << endl;
+	ofile << "\t" << trigName << ":\t" << cont << endl;
+      }
+    }
+    
+    ofile << "\n";
+    ofile << "Number of Events Processed  : " << ntot << "\n";
+    ofile << "Number of L1 Accepted Events: " << nacc << "\n";
+    ofile << "                      Ratio : " << nacc/ntot << endl;
+    
+    ofile.close();
   }
-
-  ofile << "\n";
-  ofile << "Number of Events Processed  : " << ntot << "\n";
-  ofile << "Number of L1 Accepted Events: " << nacc << "\n";
-  ofile << "                      Ratio : " << nacc/ntot << endl;
-
-  ofile.close();
 
 }
 
