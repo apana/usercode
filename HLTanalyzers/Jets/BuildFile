@@ -16,7 +16,7 @@
 <use name=DataFormats/EcalDetId>
 <use name=TBDataFormats/HcalTBObjects>
 <use name=SimDataFormats/HepMCProduct>
-<flags EDM_PLUGIN=1>
+<flags SEAL_PLUGIN_NAME="HLTanalyzersJets">
 <export>
   <lib name=HLTanalyzersJets>
   <use name=FWCore/Framework>

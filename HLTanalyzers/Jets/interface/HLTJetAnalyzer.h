@@ -5,7 +5,7 @@
 #include "FWCore/ParameterSet/interface/InputTag.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
-#include "DataFormats/Common/interface/Handle.h"
+#include "FWCore/Framework/interface/Handle.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
@@ -22,6 +22,6 @@ private:
   HLTJetAnalysis jet_analysis_;
   std::string recjets_,genjets_,recmet_,genmet_,calotowers_,hltobj_,hltresults_;
   edm::InputTag l1CollectionsTag_;
-  int errCnt1,errCnt2;
+  int errCnt;
   const int errMax(){return 100;}
 };

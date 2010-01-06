@@ -13,6 +13,7 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ConstProductRegistry.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "DataFormats/Common/interface/ProductID.h"
 
 #include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/JetReco/interface/CaloJetfwd.h"
@@ -37,14 +38,12 @@
 #include "DataFormats/L1Trigger/interface/L1ParticleMapFwd.h"
 #include "DataFormats/L1Trigger/interface/L1JetParticleFwd.h"
 
-#include "FWCore/Framework/interface/TriggerNames.h"
-
 typedef std::vector<std::string> MyStrings;
 
 /** \class HLTJetAnalysis
   *  
-  * $Date: 2007/05/13 12:02:38 $
-  * $Revision: 1.5 $
+  * $Date: 2007/03/20 16:14:51 $
+  * $Revision: 1.2 $
   * \author L. Apanasevich - UIC
   */
 class HLTJetAnalysis {
@@ -62,8 +61,7 @@ public:
 	       const CaloMETCollection& rmets,
 	       const GenMETCollection& gmets,
 	       const CaloTowerCollection& caloTowers,
-	       const edm::Handle<CandidateCollection>& genParticles,
-	       const HepMC::GenEvent& genEvent,
+	       const HepMC::GenEvent mctruth,
 	       const HLTFilterObjectWithRefs& hltobj,
 	       const edm::TriggerResults& hltresults,
 	       const l1extra::L1JetParticleCollection& l1jets,
@@ -96,13 +94,11 @@ public:
 				    const T& jets, const TString&);
 
   void bookMCParticles();
-  void fillMCParticles(edm::Handle<CandidateCollection> genParticles);
+  void fillMCParticles(const HepMC::GenEvent mctruth);
 
   void bookHLTHistograms();
   void bookL1Histograms();
 
-  int getXSWeights(const std::string& FileName);
-  double XSWeight(const double& pthat);
   void getHLTResults(const edm::TriggerResults& hltResults);
   void getHLTParticleInfo(const HLTFilterObjectWithRefs& hltobj);
 
@@ -110,18 +106,16 @@ private:
 
   // input variables
   string _HistName; // Name of histogram file
-  string _XSWeightFile; // Name of file containing cross section weights
   string _HLTPath; // Name of trigger path to analyze
-  bool _Monte,_Debug,_WeightXS;
+  bool _Monte,_Debug;
   double _EtaMin,_EtaMax;
   double _CKIN3, _CKIN4;
-  vector<string> _HistParams;
+
 
   int evtCounter;
-  bool doGenJets, doCaloJets, doL1Jets;
+  bool doGenJets, doCaloJets;
 
   const float etaBarrel() {return 1.4;}
-  const float etaEndcap() {return 2.5;}
 
   TFile* m_file; // pointer to Histogram file
 
@@ -146,17 +140,6 @@ private:
   bool hltInfoExists;
   bool evtTriggered;
 
-
-  Double_t xsw,xswo;
-  float ptHat;
-
-  vector<double>ptmins;
-  vector<double>ptmaxs;
-  vector<double>xsWeight;
-  vector<int>nevtsInBin;
-
-  int netbins;
-  double etmin,etmax;
 };
 
 #endif
