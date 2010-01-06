@@ -53,8 +53,11 @@ private:
 
   edm::TriggerNames triggerNames_;  // TriggerNames class
 
+  int errCnt;
   bool HLTinit_;
-  
+
+  const int errMax(){return 20;}
+
 };
 
 #endif

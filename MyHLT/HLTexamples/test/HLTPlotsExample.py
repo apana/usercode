@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 nevts=200
 histofile="histo.root"
-inputfile="file:/uscmst1b_scratch/lpc1/lpctrig/apana/fsim/CMSSW_2_1_10/src/run/AODIntegrationTestWithHLT.root"
+inputfile="/store/data/BeamCommissioning09/MinimumBias/RAW/v1/000/123/596/2EBD6495-39E2-DE11-A0B3-000423D99394.root"
 
 process= cms.Process('HLTPlots')
 

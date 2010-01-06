@@ -18,6 +18,8 @@ HLTPlotsExample::HLTPlotsExample( const ParameterSet & cfg ) :
   MyTrigger( cfg.getParameter<string>( "MyTrigger" ) ),
   HLTinit_(false)
   {
+
+  errCnt=0;
 }
 
 void HLTPlotsExample::beginJob( const EventSetup & ) {
@@ -39,10 +41,14 @@ void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
 
   bool gotHLT=true;
   bool myTrig=false;
+  string errMsg("");
+
 
   Handle<TriggerResults> hltresults,hltresultsDummy;
   evt.getByLabel(HLTriggerResults,hltresults);
-  if (! hltresults.isValid() ) { cout << "  -- No HLTRESULTS"; gotHLT=false;}
+  if (! hltresults.isValid() ) { 
+    gotHLT=false; errCnt+=1; errMsg=errMsg + "  -- No HLTriggerResults";
+  }
 
   if (gotHLT) {
     getHLTResults(*hltresults);
@@ -76,7 +82,7 @@ void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
       }
     }
   }else{
-    cout << "  -- No CaloJets" << endl;
+    errMsg=errMsg + "  -- No CaloJets";
   }
 
   // Get the Muon Collection
@@ -95,7 +101,18 @@ void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
       if (myTrig) h_ptMuonTrig->Fill( ptmax );
     }
   }else{
-    cout << "  -- No Muons" << endl;  
+    errMsg=errMsg + "  -- No Reco Muons";
+  }
+
+
+  if ((errMsg != "") && (errCnt < errMax())){
+    errCnt=errCnt+1;
+    errMsg=errMsg + ".";
+    std::cout << "%MyHLT-Warning" << errMsg << std::endl;
+    if (errCnt == errMax()){
+      errMsg="%MyHLT-Warning -- Maximum error count reached -- No more messages will be printed.\n";
+      std::cout << errMsg << std::endl;    
+    }
   }
 
 }
@@ -109,7 +126,7 @@ void HLTPlotsExample::getHLTResults( const edm::TriggerResults& hltresults) {
     HLTinit_=true;
     triggerNames_.init(hltresults);
     
-    cout << "Number of HLT Paths: " << ntrigs << endl;
+    cout << "\nNumber of HLT Paths: " << ntrigs << "\n\n";
 
     // book histogram and label axis with trigger names
     h_TriggerResults = fs->make<TH1F>( "TriggerResults", "HLT Results", ntrigs, 0, ntrigs );
@@ -138,6 +155,31 @@ void HLTPlotsExample::getHLTResults( const edm::TriggerResults& hltresults) {
 }
 
 void HLTPlotsExample::endJob() {
+
+  cout << "\n%%%%%%%%%%%%%%%%  Job Summary %%%%%%%%%%%%%%%%%\n\n" ;
+
+  if (h_evtCounter){
+    double ntot=h_evtCounter->GetBinContent(1);
+    cout  << "\tNumber of events processed: " << int(ntot) << "\n";
+  }
+
+  if (h_TriggerResults){
+
+    int nbins=h_TriggerResults->GetNbinsX(); 
+
+    cout  << "\tHLT Algorithm \t\t # of Accepts" << "\n";
+    cout  << "\t------------ \t\t ------------" << "\n";
+    for (int ibin=0; ibin<nbins; ++ibin){
+      float cont=h_TriggerResults->GetBinContent(ibin+1);
+      string trigName = string (h_TriggerResults->GetXaxis()->GetBinLabel(ibin+1));
+      
+      if (!trigName.empty()){
+	cout  << "\t" << trigName << ":\t" << cont << endl;
+      }
+    }
+    cout << "\n" << endl;
+  }
+
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"
