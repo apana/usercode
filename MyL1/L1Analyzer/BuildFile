@@ -15,6 +15,7 @@
 <use name=DataFormats/EcalDigi>
 <use name=DataFormats/EcalDetId>
 <use name=TBDataFormats/HcalTBObjects>
+<use name=DataFormats/L1Trigger>
 <use name=SimDataFormats/HepMCProduct>
 <flags EDM_PLUGIN=1>
 <export>
@@ -35,5 +36,6 @@
   <use name=DataFormats/EcalDigi>
   <use name=DataFormats/EcalDetId>
   <use name=TBDataFormats/HcalTBObjects>
+  <use name=DataFormats/L1Trigger>
   <use name=SimDataFormats/HepMCProduct>
 </export>
