@@ -44,10 +44,10 @@ process ANALYSIS  = {
     
     source = PoolSource {
 	untracked vstring fileNames = {
-	    "file:/uscmst1b_scratch/lpc1/cmsjtmet/apana/hlt/CSA07-152/HLTPoolOutput_QCD_pt${ptmin}-${ptmax}.root"
+	    "rfio:/castor/cern.ch/user/a/apana/131HLT2/HLToutput_mc-onsel-120_QCD_pt_${ptmin}_${ptmax}-OSFLoose-v2_.root"
 	}
+	untracked int32 maxEvents = ${nevts}
     }
-    untracked PSet maxEvents = {untracked int32 input = ${nevts}}
     include "FWCore/MessageLogger/data/MessageLogger.cfi"
 
     #include "Configuration/StandardSequences/data/FakeConditions.cff"
@@ -55,36 +55,37 @@ process ANALYSIS  = {
     #include "input/mc-onsel-120_QCD_pt_50_80-OSFLoose-v2.cff"
     #include "input/mc-onsel-120_PU_Minbias-OSFDefault-v1.cff"
     #include "input/mc-onsel-120_QCD_pt_470_600.cff"
+    #replace PoolSource.maxEvents = 1000
 
     es_module = CaloGeometryBuilder {}
 
    #Geometry
     include "Geometry/CMSCommonData/data/cmsSimIdealGeometryXML.cfi"
 
-    module hltanalysisPE1 = HLTJetAnalyzer{
+    module l1analysisPE1 = HLTJetAnalyzer{
 	# string recjets = "iterativeCone5CaloJets"
 	string recjets = "MCJetCorJetIcone5"
 	string genjets = "iterativeCone5GenJets"
 	string recmet  = "met"
 	string genmet  = "genMet"
-	string hltobj  = "hlt1jet150"
+	string hltobj  = "hlt1jet250"
 	string calotowers = "towerMaker"
 	InputTag l1collections= l1extraParticles
 	PSet RunParameters =
 	{
 	    string HistogramFile = "analysis_pt${ptmin}_${ptmax}.root"
-	    vstring HistParams = {"60","0","600"}
+	    vstring HistParams = {"100","0","500"}
 	    string HLTPath = "HLT1jetPE1"
 	    bool Monte = true
 	    bool Debug = false
-	    double EtaMin   = -5.2
-	    double EtaMax   = 5.2
+	    double EtaMin   = -5.0
+	    double EtaMax   = 5.0
 	    bool WeightXS = true
 	    string XSWeightFile = "xsweight.dat"
 	}
     }
     
-    path p1 = {hltanalysisPE1}
+    path p1 = {l1analysisPE1}
 		
 }		
 EOF
