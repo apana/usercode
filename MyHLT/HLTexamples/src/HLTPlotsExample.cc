@@ -25,9 +25,9 @@ HLTPlotsExample::HLTPlotsExample( const ParameterSet & cfg ) :
 void HLTPlotsExample::beginJob( const EventSetup & ) {
 
   h_evtCounter    =  fs->make<TH1F>( "evtCounter",  "Event Counter", 10, -0.5, 9.5 );
-  h_ptCal         =  fs->make<TH1F>( "ptCal",  "CaloJet p_{T}", 100, 0, 500 );
-  h_ptCalLeading  =  fs->make<TH1F>( "ptCalL",  "p_{T} of leading CaloJets", 100, 0, 500 );
-  h_ptCalTrig     =  fs->make<TH1F>( "ptCalTrig",  "p_{T} of leading CaloJets -- Triggered", 100, 0, 500 );
+  h_ptCal         =  fs->make<TH1F>( "ptCal",  "CaloJet p_{T}", 50, 0, 50 );
+  h_ptCalLeading  =  fs->make<TH1F>( "ptCalL",  "p_{T} of leading CaloJets", 50, 0, 50 );
+  h_ptCalTrig     =  fs->make<TH1F>( "ptCalTrig",  "p_{T} of leading CaloJets -- Triggered", 50, 0, 50 );
 
   h_etaCalLeading = fs->make<TH1F>( "etaCal", "#eta of leading CaloJets", 50, -3, 3 );
   h_phiCalLeading = fs->make<TH1F>( "phiCal", "#phi of leading CaloJets", 50, -M_PI, M_PI );
