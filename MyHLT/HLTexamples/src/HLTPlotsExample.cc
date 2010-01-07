@@ -160,7 +160,7 @@ void HLTPlotsExample::endJob() {
 
   if (h_evtCounter){
     double ntot=h_evtCounter->GetBinContent(1);
-    cout  << "\tNumber of events processed: " << int(ntot) << "\n";
+    cout  << "\tNumber of events processed: " << int(ntot) << "\n\n";
   }
 
   if (h_TriggerResults){
