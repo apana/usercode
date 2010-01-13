@@ -24,6 +24,13 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(inputfile)
 )
 
+# configure modules via Global Tag
+# https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideFrontierConditions
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+# process.GlobalTag.globaltag = 'IDEAL_31X::All'
+process.GlobalTag.globaltag = 'STARTUP3X_V8L::All'
+
+
 # use TFileService for output histograms
 process.TFileService = cms.Service("TFileService",
                               fileName = cms.string(histofile)
@@ -31,7 +38,8 @@ process.TFileService = cms.Service("TFileService",
 
 process.load("MyL1.L1Analyzer.l1bits_cfi")
 process.l1bits.Outfile= cms.string(outfile)
-process.l1bits.L1GtRecordInputTag  = cms.InputTag("simGtDigis")
+# process.l1bits.L1GtRecordInputTag  = cms.InputTag("simGtDigis")
+process.l1bits.L1GtRecordInputTag  = cms.InputTag("gtDigis")
 process.l1bits.L1GtObjectMapRecord = cms.InputTag("simGtDigis")
 process.l1bits.L1AlgoName = cms.string("L1_SingleJet6")
 

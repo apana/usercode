@@ -15,7 +15,9 @@
 <use name=DataFormats/EcalDetId>
 <use name=TBDataFormats/HcalTBObjects>
 <use name=DataFormats/L1Trigger>
+<use name=CondFormats/L1TObjects>
 <use name=DataFormats/L1GlobalTrigger>
+<use name=CondFormats/DataRecord>
 <use name=SimDataFormats/GeneratorProducts>
 <use name=PhysicsTools/UtilAlgos>
 <use name=FWCore/ServiceRegistry>
@@ -38,6 +40,8 @@
   <use name=DataFormats/EcalDetId>
   <use name=TBDataFormats/HcalTBObjects>
   <use name=DataFormats/L1Trigger>
+  <use name=CondFormats/L1TObjects>
   <use name=DataFormats/L1GlobalTrigger>
+  <use name=CondFormats/DataRecord>
   <use name=SimDataFormats/GeneratorProducts>
 </export>

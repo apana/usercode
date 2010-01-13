@@ -10,6 +10,9 @@
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/ParameterSet/interface/InputTag.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -20,9 +23,6 @@
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetup.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapFwd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMap.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
 #include <TROOT.h>
@@ -50,14 +50,14 @@ private:
 
   void doL1Analysis();
 
-  void getL1Results(const L1GlobalTriggerReadoutRecord&,  
-		  const L1GlobalTriggerObjectMapRecord&
+  void getL1Results(const L1GlobalTriggerReadoutRecord&,
+		    const L1GtTriggerMenu&
 		  );
 
   edm::Service<TFileService> fs;
 
   std::string text_output, l1AlgoName;
-  InputTag l1GtRecordInputTag, l1GtObjectMap;
+  InputTag l1GtRecordInputTag;
 
 
   int errCnt;
@@ -66,14 +66,17 @@ private:
   const int errMax(){return 100;}
 
   TH1F* evtCounter;
-  TH1F* h_L1Results, *h_L1Results2;
+  TH1F* h_L1AlgoResults, *h_L1TechResults;
 
   unsigned int numberTriggerBits;
+  unsigned int numberTechnicalTriggerBits;
+
   static const size_t nL1BitsMax=128;
   string algoBitToName[nL1BitsMax];
+  string techBitToName[nL1BitsMax];
 
   // use the map function to access trigger information
-  std::map <string,bool> l1TriggerMap;
+  std::map <string,bool> l1TriggerDecision,l1TechTriggerDecision;
   std::map<string,bool>::iterator trig_iter;
 
 };
