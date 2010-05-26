@@ -14,33 +14,50 @@ using namespace std;
 HLTPlotsExample::HLTPlotsExample( const ParameterSet & cfg ) :
   HLTriggerResults( cfg.getParameter<InputTag>( "HLTriggerResults" ) ),
   CaloJetAlgorithm( cfg.getParameter<InputTag>( "CaloJetAlgorithm" ) ),
+  muonCollection( cfg.getParameter<InputTag>( "MuonCollection" ) ),
   MyTrigger( cfg.getParameter<string>( "MyTrigger" ) ),
   HLTinit_(false)
   {
+
+  errCnt=0;
 }
 
-void HLTPlotsExample::beginJob( const EventSetup & ) {
+void HLTPlotsExample::beginJob() {
 
+  h_lumi          =  fs->make<TH1F>( "lumi",  "Lumi Sections", 1000, 0.,1000. );
+  h_lumi->Sumw2();
   h_evtCounter    =  fs->make<TH1F>( "evtCounter",  "Event Counter", 10, -0.5, 9.5 );
-  h_ptCal         =  fs->make<TH1F>( "ptCalAll",  "p_{T} of CaloJets", 100, 0, 500 );
-  h_ptCalLeading  =  fs->make<TH1F>( "ptCal",  "p_{T} of leading CaloJets", 100, 0, 500 );
-  h_ptCalTrig     =  fs->make<TH1F>( "ptCalTrig",  "p_{T} of leading CaloJets -- Triggered", 100, 0, 500 );
+  h_ptCal         =  fs->make<TH1F>( "ptCal",  "CaloJet p_{T}", 50, 0, 50 );
+  h_ptCalLeading  =  fs->make<TH1F>( "ptCalL",  "p_{T} of leading CaloJets", 50, 0, 50 );
+  h_ptCalTrig     =  fs->make<TH1F>( "ptCalTrig",  "p_{T} of leading CaloJets -- Triggered", 50, 0, 50 );
 
   h_etaCalLeading = fs->make<TH1F>( "etaCal", "#eta of leading CaloJets", 50, -3, 3 );
   h_phiCalLeading = fs->make<TH1F>( "phiCal", "#phi of leading CaloJets", 50, -M_PI, M_PI );
+
+  h_ptMuon        =  fs->make<TH1F>( "ptMuon",  "Muon p_{T}", 100, 0, 20 );
+  h_ptMuonLeading =  fs->make<TH1F>( "ptMuonL", "p_{T} of Leading Muon", 100, 0, 20 );
+  h_ptMuonTrig    =  fs->make<TH1F>( "ptMuonTrig", "p_{T} of Leading Muon -- Triggered", 100, 0, 20 );
 }
 
 void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
 
   bool gotHLT=true;
   bool myTrig=false;
+  string errMsg("");
+
 
   Handle<TriggerResults> hltresults,hltresultsDummy;
   evt.getByLabel(HLTriggerResults,hltresults);
-  if (! hltresults.isValid() ) { cout << "  -- No HLTRESULTS"; gotHLT=false;}
+  if (! hltresults.isValid() ) { 
+    gotHLT=false; errCnt+=1; errMsg=errMsg + "  -- No HLTriggerResults";
+  }
+
+  int iLumi = evt.luminosityBlock();
+  h_lumi->Fill(float(iLumi));
 
   if (gotHLT) {
-    getHLTResults(*hltresults);
+    const TriggerNames & triggerNames_ = evt.triggerNames(*hltresults);
+    getHLTResults(*hltresults, triggerNames_);
     trig_iter=hltTriggerMap.find(MyTrigger);
     if (trig_iter==hltTriggerMap.end()){
       cout << "Could not find trigger path with name: " << MyTrigger << endl;
@@ -71,21 +88,52 @@ void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
       }
     }
   }else{
-    cout << "  -- No CaloJets" << endl;
+    errMsg=errMsg + "  -- No CaloJets";
+  }
+
+  // Get the Muon Collection
+  Handle<MuonCollection> muon,muonDummy;
+  evt.getByLabel(muonCollection,muon);
+  if (muon.isValid()) { 
+    double ptmax=-999.;
+    typedef MuonCollection::const_iterator muiter,mumax;
+    for (muiter i=muon->begin(); i!=muon->end(); i++) {
+      double mupt=i->pt();
+      if (mupt > ptmax) ptmax=mupt;
+      h_ptMuon->Fill( mupt );
+    }
+    if (ptmax > 0.){
+      h_ptMuonLeading->Fill( ptmax );
+      if (myTrig) h_ptMuonTrig->Fill( ptmax );
+    }
+  }else{
+    errMsg=errMsg + "  -- No Reco Muons";
+  }
+
+
+  if ((errMsg != "") && (errCnt < errMax())){
+    errCnt=errCnt+1;
+    errMsg=errMsg + ".";
+    std::cout << "%MyHLT-Warning" << errMsg << std::endl;
+    if (errCnt == errMax()){
+      errMsg="%MyHLT-Warning -- Maximum error count reached -- No more messages will be printed.\n";
+      std::cout << errMsg << std::endl;    
+    }
   }
 
 }
 
-void HLTPlotsExample::getHLTResults( const edm::TriggerResults& hltresults) {
+void HLTPlotsExample::getHLTResults( const edm::TriggerResults& hltresults,
+				     const edm::TriggerNames& triggerNames_) {
 
 
   int ntrigs=hltresults.size();
 
   if (! HLTinit_){
     HLTinit_=true;
-    triggerNames_.init(hltresults);
+    // triggerNames_.init(hltresults);
     
-    cout << "Number of HLT Paths: " << ntrigs << endl;
+    cout << "\nNumber of HLT Paths: " << ntrigs << "\n\n";
 
     // book histogram and label axis with trigger names
     h_TriggerResults = fs->make<TH1F>( "TriggerResults", "HLT Results", ntrigs, 0, ntrigs );
@@ -114,6 +162,31 @@ void HLTPlotsExample::getHLTResults( const edm::TriggerResults& hltresults) {
 }
 
 void HLTPlotsExample::endJob() {
+
+  cout << "\n%%%%%%%%%%%%%%%%  Job Summary %%%%%%%%%%%%%%%%%\n\n" ;
+
+  if (h_evtCounter){
+    double ntot=h_evtCounter->GetBinContent(1);
+    cout  << "\tNumber of events processed: " << int(ntot) << "\n\n";
+  }
+
+  if (h_TriggerResults){
+
+    int nbins=h_TriggerResults->GetNbinsX(); 
+
+    cout  << "\tHLT Algorithm \t\t # of Accepts" << "\n";
+    cout  << "\t------------ \t\t ------------" << "\n";
+    for (int ibin=0; ibin<nbins; ++ibin){
+      float cont=h_TriggerResults->GetBinContent(ibin+1);
+      string trigName = string (h_TriggerResults->GetXaxis()->GetBinLabel(ibin+1));
+      
+      if (!trigName.empty()){
+	cout  << "\t" << trigName << ":\t" << cont << endl;
+      }
+    }
+    cout << "\n" << endl;
+  }
+
 }
 
 #include "FWCore/Framework/interface/MakerMacros.h"
