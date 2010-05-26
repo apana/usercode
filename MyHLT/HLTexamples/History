@@ -1,3 +1,5 @@
 V00-00-01  -- Initial version
 V00-00-02  -- Updates
 V00-00-03  -- For use with CMSSW versions before 35x
+V00-00-04  -- Update for 35x/36x compatibility. Add in Lumi section info
+

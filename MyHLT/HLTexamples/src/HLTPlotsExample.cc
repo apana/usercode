@@ -22,8 +22,10 @@ HLTPlotsExample::HLTPlotsExample( const ParameterSet & cfg ) :
   errCnt=0;
 }
 
-void HLTPlotsExample::beginJob( const EventSetup & ) {
+void HLTPlotsExample::beginJob() {
 
+  h_lumi          =  fs->make<TH1F>( "lumi",  "Lumi Sections", 1000, 0.,1000. );
+  h_lumi->Sumw2();
   h_evtCounter    =  fs->make<TH1F>( "evtCounter",  "Event Counter", 10, -0.5, 9.5 );
   h_ptCal         =  fs->make<TH1F>( "ptCal",  "CaloJet p_{T}", 50, 0, 50 );
   h_ptCalLeading  =  fs->make<TH1F>( "ptCalL",  "p_{T} of leading CaloJets", 50, 0, 50 );
@@ -50,8 +52,12 @@ void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
     gotHLT=false; errCnt+=1; errMsg=errMsg + "  -- No HLTriggerResults";
   }
 
+  int iLumi = evt.luminosityBlock();
+  h_lumi->Fill(float(iLumi));
+
   if (gotHLT) {
-    getHLTResults(*hltresults);
+    const TriggerNames & triggerNames_ = evt.triggerNames(*hltresults);
+    getHLTResults(*hltresults, triggerNames_);
     trig_iter=hltTriggerMap.find(MyTrigger);
     if (trig_iter==hltTriggerMap.end()){
       cout << "Could not find trigger path with name: " << MyTrigger << endl;
@@ -117,14 +123,15 @@ void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
 
 }
 
-void HLTPlotsExample::getHLTResults( const edm::TriggerResults& hltresults) {
+void HLTPlotsExample::getHLTResults( const edm::TriggerResults& hltresults,
+				     const edm::TriggerNames& triggerNames_) {
 
 
   int ntrigs=hltresults.size();
 
   if (! HLTinit_){
     HLTinit_=true;
-    triggerNames_.init(hltresults);
+    // triggerNames_.init(hltresults);
     
     cout << "\nNumber of HLT Paths: " << ntrigs << "\n\n";
 
