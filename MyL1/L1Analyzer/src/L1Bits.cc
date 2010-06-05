@@ -14,7 +14,7 @@ L1Bits::L1Bits( const ParameterSet & cfg ) {
   h_L1TechResults=0;
 }
 
-void L1Bits::beginJob( const EventSetup & ) {
+void L1Bits::beginJob() {
 
   evtCounter=fs->make<TH1F>("EventCounter","Event Counter",5,0.,5.);
 

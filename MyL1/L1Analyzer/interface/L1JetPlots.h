@@ -13,7 +13,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "PhysicsTools/UtilAlgos/interface/TFileService.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "MyL1/L1Analyzer/interface/L1JetPlots.h"
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
@@ -49,7 +49,7 @@ public:
   L1JetPlots( const edm::ParameterSet & );
 
 private:
-  void beginJob( const edm::EventSetup & );
+  void beginJob();
   void analyze( const edm::Event& , const edm::EventSetup& );
   void endJob();
 

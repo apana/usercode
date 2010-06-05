@@ -30,7 +30,7 @@ L1JetPlots::L1JetPlots( const ParameterSet & cfg ) {
 
 }
 
-void L1JetPlots::beginJob( const EventSetup & ) {
+void L1JetPlots::beginJob() {
 
   ptCal =  fs->make<TH1F>( "ptCal",  "p_{T} of leading CaloJets", 50, 0, 500 );
   etaCal = fs->make<TH1F>( "etaCal", "#eta of leading CaloJets", 52, -5.2, 5.2 );

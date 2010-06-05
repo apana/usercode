@@ -12,61 +12,37 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"
-
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
-#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetupFwd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutSetup.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-#include "DataFormats/Math/interface/deltaR.h"
+#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
 
-#include <TROOT.h>
-#include <TH1.h>
-#include <TH2.h>
-#include <TSystem.h>
-#include <TFile.h>
-#include <TCanvas.h>
-#include <cmath>
-#include <map>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 
 using namespace edm;
 using namespace std;
 
-class L1Bits : public edm::EDAnalyzer {
+class BitNumbertoName : public edm::EDAnalyzer {
 public:
-  L1Bits( const edm::ParameterSet & );
+  BitNumbertoName( const edm::ParameterSet & );
 
 private:
   void beginJob();
   void analyze( const edm::Event& , const edm::EventSetup& );
   void endJob();
 
-  void doL1Analysis();
+  L1GtUtils m_l1GtUtils;
 
-  void getL1Results(const L1GlobalTriggerReadoutRecord&,
-		    const L1GtTriggerMenu&
-		  );
-
-  edm::Service<TFileService> fs;
-
-  std::string text_output, l1AlgoName;
+  std::string outFile, l1AlgoName;
   InputTag l1GtRecordInputTag;
+  InputTag l1GtReadoutRecordInputTag;
 
 
-  int errCnt;
   bool initL1, initAnalysis;
 
   const int errMax(){return 100;}
-
-  TH1F* evtCounter;
-  TH1F* h_L1AlgoResults, *h_L1TechResults;
 
   unsigned int numberTriggerBits;
   unsigned int numberTechnicalTriggerBits;

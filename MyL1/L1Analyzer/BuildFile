@@ -19,8 +19,9 @@
 <use name=DataFormats/L1GlobalTrigger>
 <use name=CondFormats/DataRecord>
 <use name=SimDataFormats/GeneratorProducts>
-<use name=PhysicsTools/UtilAlgos>
+<use name=CommonTools/UtilAlgos>
 <use name=FWCore/ServiceRegistry>
+<use name=L1Trigger/GlobalTriggerAnalyzer>
 <flags EDM_PLUGIN=1>
 <export>
   <lib name=MyL1L1Analyzer>
@@ -44,4 +45,5 @@
   <use name=DataFormats/L1GlobalTrigger>
   <use name=CondFormats/DataRecord>
   <use name=SimDataFormats/GeneratorProducts>
+  <use name=L1Trigger/GlobalTriggerAnalyzer>
 </export>
