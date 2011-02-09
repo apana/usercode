@@ -33,7 +33,7 @@ void BitNumbertoName::analyze( const Event& iEvent, const EventSetup& evSetup ) 
   const AlgorithmMap* m_algorithmAliasMap = &(m_l1GtMenu->gtAlgorithmAliasMap());
   const AlgorithmMap* m_technicalTriggerMap = &(m_l1GtMenu->gtTechnicalTriggerMap());
 
-  int maxLen=0;
+  unsigned int maxLen=0;
 
   for (CItAlgo algo = m_algorithmMap->begin(); algo!=m_algorithmMap->end(); ++algo) {
     cout << "Name: " << (algo->second).algoName() << " Alias: " << (algo->second).algoAlias() << endl;
