@@ -1,15 +1,14 @@
-# rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_fromAOD.root
+# rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_fromAOD.root
 # /tmp/apana/PrunedJets_fromAOD.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_10_1_J2f.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_11_1_z79.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_12_1_ahf.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_1_1_SSO.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_2_1_iZP.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_3_1_qme.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_4_1_GRK.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_5_1_Em8.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_6_1_ex3.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_7_1_pcx.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_8_1_Wb0.root
-rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/PrunedJets_2011_fromAOD_9_1_fKu.root
-
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_10_1_J2f.root
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_11_1_z79.root
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_12_1_ahf.root
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_1_1_SSO.root
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_2_1_iZP.root
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_3_1_qme.root
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_4_1_GRK.root
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_5_1_Em8.root
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_6_1_ex3.root
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_7_1_pcx.root
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_8_1_Wb0.root
+rfio:/castor/cern.ch/user/a/apana/QCD2011/JetPruning/HLTJet240/PrunedJets_2011_fromAOD_9_1_fKu.root
