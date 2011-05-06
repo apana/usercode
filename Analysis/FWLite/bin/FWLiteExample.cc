@@ -29,6 +29,8 @@
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "CommonTools/Utils/interface/PtComparator.h"
 
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+
 #include "Analysis/FWLite/interface/FWLiteExample.h"
 using namespace std;
 
@@ -76,26 +78,29 @@ int main(int argc, char* argv[])
   // book a set of histograms
   fwlite::TFileService fs = fwlite::TFileService(outputFile_.c_str());
   TFileDirectory dir = fs.mkdir("analyzeBasicPat");
-  TH1F* jetPt_  = dir.make<TH1F>("jetPt"  , "pt"  ,   100,   0., 500.);
-  TH1F* subjetPt_  = dir.make<TH1F>("subjetPt"  , "SubJet pt"  ,   100,   0., 500.);
-  TH1F* jetLPt_  = dir.make<TH1F>("jetLeadingPt"  , "Leading Jet p_{T}"  ,   100,   0., 500.);
+  TH1F* jetPt_  = dir.make<TH1F>("jetPt"  , "pt"  ,   100,   0., 500.); jetPt_->Sumw2();
+  TH1F* subjetPt_  = dir.make<TH1F>("subjetPt"  , "SubJet pt"  ,   100,   0., 500.);  subjetPt_->Sumw2();
+  TH1F* jetLPt_  = dir.make<TH1F>("jetLeadingPt"  , "Leading Jet p_{T}"  ,   100,   0., 500.); jetLPt_->Sumw2();
 
-  TH1F* jetEta_ = dir.make<TH1F>("jetEta" , "eta" ,   100,  -3.,   3.);
-  TH1F* jetPhi_ = dir.make<TH1F>("jetPhi" , "phi" ,   100,  -5.,   5.);  
+  TH1F* jetEta_ = dir.make<TH1F>("jetEta" , "eta" ,   100,  -3.,   3.);  jetEta_->Sumw2();
+  TH1F* jetPhi_ = dir.make<TH1F>("jetPhi" , "phi" ,   100,  -5.,   5.);  jetPhi_->Sumw2();
 
-  TH1F* jetMass_ = dir.make<TH1F>("jetMass" , "Pruned Jet mass" ,   100,  0.,   150.);  
-  TH1F* MassDrop_ = dir.make<TH1F>("MassDrop" , "mass_s1 / massJ" ,   50,  0.,   1.);  
+  TH1F* jetMass_   = dir.make<TH1F>("jetMass" , "Pruned Jet mass" ,   100,  0.,   150.);   jetMass_->Sumw2();
+  TH1F* jetMassN2_   = dir.make<TH1F>("jetMassN2" , "Pruned Jet mass -- 2 good constituents" ,   100,  0.,   150.);   jetMassN2_->Sumw2();
+  TH1F* MassDrop_ = dir.make<TH1F>("MassDrop" , "mass_s1 / massJ" ,   50,  0.,   1.); MassDrop_->Sumw2();
 
-  TH1F* Asymmetry_= dir.make<TH1F>("Asymmetry" , "Subjet Asymmetry" ,   50,  0.,   1.);  
-  TH1F* DeltaR_= dir.make<TH1F>("DeltaR" , "Subjet Delta R" ,   50,  0.,   1.);  
+  TH1F* Asymmetry_ = dir.make<TH1F>("Asymmetry" , "Subjet Asymmetry" ,   50,  0.,   1.); Asymmetry_->Sumw2();
+  TH1F* DeltaR_    = dir.make<TH1F>("DeltaR" , "Subjet Delta R" ,   50,  0.,   1.); DeltaR_->Sumw2();
 
-  TH1F* NConst_ = dir.make<TH1F>("nConst" , "Number of Constituents" ,   5,  0.,   5.);  
+  TH1F* NConst_ = dir.make<TH1F>("nConst" , "Number of Constituents" ,   5,  -0.5,   4.5); NConst_->Sumw2();
+
+  bool isMC(true);
 
   // loop the events
   int ievt=0;  
   for(unsigned int iFile=0; iFile<inputFiles_.size(); ++iFile){
     TString inputFile=inputFiles_.at(iFile);
-    cout << "Processing: "<< inputFile<< endl;
+    cout << "Processing file "<< iFile+1 << ": "<< inputFile<< endl;
 
     TFile* inFile = TFile::Open(inputFile);
     if( inFile ){
@@ -119,6 +124,22 @@ int main(int argc, char* argv[])
 	  std::cout << "  processing event: " << ievt << std::endl;
 	  std::cout <<" Run ID " << ev.getRun().id()<< std::endl;
 	}
+
+
+	double wt(1.);
+	if (isMC){
+	  edm::Handle< GenEventInfoProduct > GenInfoHandle;
+	  std::string Gen("generator");
+	  event.getByLabel( Gen, GenInfoHandle );
+	  double qScale = GenInfoHandle->qScale();
+	  double pthat = ( GenInfoHandle->hasBinningValues() ? 
+			   (GenInfoHandle->binningValues())[0] : 0.0);
+	  
+	  //cout << " qScale = " << qScale << " pthat = " << pthat << endl;
+	  wt = GenInfoHandle->weight();
+	}
+	//std::cout << " integrated event weight = " << wt << std::endl;
+
 
 	std::string inputColl("ak5PFJets");
 	// determine this is a good event using the ak5 jet collections
@@ -171,9 +192,9 @@ int main(int argc, char* argv[])
 	int ijet=0;
 	//for(std::vector<PFJet>::const_iterator jet=jets->begin(); jet!=jets->end(); ++jet){
 	for(std::vector<BasicJet>::const_iterator jet=myjets.begin(); jet!=myjets.end(); ++jet){
-	  jetPt_ ->Fill( jet->pt () );
-	  jetEta_->Fill( jet->eta() );
-	  jetPhi_->Fill( jet->phi() );	  
+	  jetPt_ ->Fill( jet->pt (),wt );
+	  jetEta_->Fill( jet->eta(),wt );
+	  jetPhi_->Fill( jet->phi(),wt );	  
 	  // require some jet cleaning
 	  if (jet->pt () > 250. && fabs(jet->eta())<2.5 && goodEVT) {
 
@@ -183,48 +204,53 @@ int main(int argc, char* argv[])
 
 	      const std::vector<edm::Ptr<reco::Candidate> > iparticles = jet->getJetConstituents();
 	      int nConstituents = iparticles.size();
-	      NConst_->Fill(nConstituents);
+	      NConst_->Fill(nConstituents,1.);
 
 	      if (ijet==1 ){
 		double mfat = jet->mass();
-		jetLPt_ ->Fill( jet->pt () );
-		jetMass_ ->Fill( mfat );
+		jetLPt_ ->Fill( jet->pt (),wt );
+		jetMass_ ->Fill( mfat,wt );
 		
 		double maxSubjetPt=0.;
 		double maxSubjetMass=0;
+		int nGoodConstituents(0);
+
 		for (int i = 0; i <nConstituents ; i++){
 		  double subpt  = iparticles[i]->pt();
 		  double submass= iparticles[i]->mass();
 
-		  subjetPt_ ->Fill( subpt );
+		  if (subpt>5.) nGoodConstituents++;
+		  subjetPt_ ->Fill( subpt,wt );
 		  if (subpt > maxSubjetPt) {
 		    maxSubjetPt=subpt;
 		    maxSubjetMass=submass;
 		  }
 		}
-		double mu=maxSubjetMass/mfat;
-		MassDrop_->Fill( mu );
+		bool GoodConstituents= (nGoodConstituents>1);
+		if (nConstituents ==2 && GoodConstituents){
 
-		if (nConstituents ==2){
+		  // if (mu>0.95){
+		  //   
+		  //   cout << "Mu: " << mu << " m1: " << iparticles[0]->mass() << " m2: " << iparticles[1]->mass() << endl;
+		  //   cout << "Mfat: " << mfat << " pt1: " << iparticles[0]->pt() << " pt2: " << iparticles[1]->pt() << endl;
+		  // }
+
 		  double m1=iparticles[0]->mass();
 		  double m2=iparticles[1]->mass();
 		  double pt1=iparticles[0]->pt();
 		  double pt2=iparticles[1]->pt();
-		      
-		  if (pt2>pt1){
-		  //if (m2>m1){
-		    double temp = m2;
-		    m1=m2;
-		    m2=temp;
-		  }
-		  
+		  double mu=m1/mfat;
+		  if (pt2>pt1) mu=m2/mfat;
+
 		  double dR = reco::deltaR<double>( iparticles[0] ->eta(),
 						    iparticles[0] ->phi(),
 						    iparticles[1] ->eta(),
 						    iparticles[1] ->phi()  );
 		  double asy = std::min( pt1*pt1, pt2*pt2) * dR*dR / (mfat*mfat);
-		  DeltaR_->Fill( dR );
-		  Asymmetry_->Fill( asy );
+		  jetMassN2_ ->Fill( mfat,wt );
+		  DeltaR_->Fill( dR,wt );
+		  Asymmetry_->Fill( asy,wt );
+		  MassDrop_->Fill( mu,wt );
 		  
 		}
 	      }// end ijet==1
