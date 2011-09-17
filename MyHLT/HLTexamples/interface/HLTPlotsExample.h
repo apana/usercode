@@ -38,8 +38,8 @@ private:
 
   edm::Service<TFileService> fs;
 
-  edm::InputTag HLTriggerResults,CaloJetAlgorithm,muonCollection;
-  std::string MyTrigger;
+  edm::InputTag HLTriggerResults1_,HLTriggerResults2_,CaloJetAlgorithm,muonCollection;
+  std::string MyTrigger1,MyTrigger2;
 
   TH1F *h_ptCal, *h_ptCalLeading, *h_ptCalTrig, *h_etaCalLeading, *h_phiCalLeading;
   TH1F *h_ptMuon, *h_ptMuonLeading, *h_ptMuonTrig;
@@ -53,7 +53,7 @@ private:
 
   edm::TriggerNames triggerNames_;  // TriggerNames class
 
-  int errCnt;
+  int errCnt,oRun;
   bool HLTinit_;
 
   const int errMax(){return 20;}

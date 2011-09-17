@@ -12,14 +12,17 @@ using namespace std;
 // Get the algorithm of the jet collections we will read from the .cfg file
 // which defines the value of the strings CaloJetAlgorithm and GenJetAlgorithm.
 HLTPlotsExample::HLTPlotsExample( const ParameterSet & cfg ) :
-  HLTriggerResults( cfg.getParameter<InputTag>( "HLTriggerResults" ) ),
+  HLTriggerResults1_( cfg.getParameter<InputTag>( "HLTriggerResults1" ) ),
+  HLTriggerResults2_( cfg.getParameter<InputTag>( "HLTriggerResults2" ) ),
   CaloJetAlgorithm( cfg.getParameter<InputTag>( "CaloJetAlgorithm" ) ),
   muonCollection( cfg.getParameter<InputTag>( "MuonCollection" ) ),
-  MyTrigger( cfg.getParameter<string>( "MyTrigger" ) ),
+  MyTrigger1( cfg.getParameter<string>( "MyTrigger1" ) ),
+  MyTrigger2( cfg.getParameter<string>( "MyTrigger2" ) ),
   HLTinit_(false)
   {
 
   errCnt=0;
+  oRun=0;
 }
 
 void HLTPlotsExample::beginJob() {
@@ -42,32 +45,57 @@ void HLTPlotsExample::beginJob() {
 void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
 
   bool gotHLT=true;
-  bool myTrig=false;
+  bool myTrig1=false, myTrig2=false;
   string errMsg("");
 
 
-  Handle<TriggerResults> hltresults,hltresultsDummy;
-  evt.getByLabel(HLTriggerResults,hltresults);
-  if (! hltresults.isValid() ) { 
-    gotHLT=false; errCnt+=1; errMsg=errMsg + "  -- No HLTriggerResults";
+  Handle<TriggerResults> hltresults1,hltresults2;
+  evt.getByLabel(HLTriggerResults1_,hltresults1);
+  if (! hltresults1.isValid() ) { 
+    gotHLT=false; errCnt+=1; errMsg=errMsg + "  -- No HLTriggerResults with process name: " + HLTriggerResults1_.process();
   }
 
+  evt.getByLabel(HLTriggerResults2_,hltresults2);
+  if (! hltresults2.isValid() ) { 
+    gotHLT=false; errCnt+=1; errMsg=errMsg + "  -- No HLTriggerResults with process name: " + HLTriggerResults2_.process();
+  }
+
+
   int iLumi = evt.luminosityBlock();
+  int iRun = evt.id().run();
+  int iEvent = evt.id().event();
   h_lumi->Fill(float(iLumi));
 
+  if (iRun != oRun){
+    cout << "Beginning to Process new run:" << iRun << endl;
+    oRun=iRun;
+    gotHLT=false;
+  }
   if (gotHLT) {
-    const TriggerNames & triggerNames_ = evt.triggerNames(*hltresults);
-    getHLTResults(*hltresults, triggerNames_);
-    trig_iter=hltTriggerMap.find(MyTrigger);
+    const TriggerNames & triggerNames_ = evt.triggerNames(*hltresults1);
+    getHLTResults(*hltresults1, triggerNames_);
+    trig_iter=hltTriggerMap.find(MyTrigger1);
     if (trig_iter==hltTriggerMap.end()){
-      cout << "Could not find trigger path with name: " << MyTrigger << endl;
+      cout << "Could not find trigger path with name: " << MyTrigger1 << endl;
     }else{
-      myTrig=trig_iter->second;
+      myTrig1=trig_iter->second;
     }
   }
 
   h_evtCounter->Fill(0.); // count number of events processed
-  if (myTrig) h_evtCounter->Fill(1.); // count number of events that fired my Trigger
+  if (! myTrig1) return; 
+  h_evtCounter->Fill(1.); // count number of events that fired my Trigger
+
+  if (gotHLT) {
+    const TriggerNames & triggerNames_ = evt.triggerNames(*hltresults2);
+    getHLTResults(*hltresults2, triggerNames_);
+    trig_iter=hltTriggerMap.find(MyTrigger2);
+    if (trig_iter==hltTriggerMap.end()){
+      cout << "Could not find trigger path with name: " << MyTrigger2 << endl;
+    }else{
+      myTrig2=trig_iter->second;
+    }
+  }
 
   //Get the CaloJet collection
   Handle<CaloJetCollection> caloJets,caloJetsDummy;
@@ -83,7 +111,7 @@ void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
 	h_etaCalLeading->Fill( cal->eta() );
 	h_phiCalLeading->Fill( cal->phi() );
       
-	if (myTrig) h_ptCalTrig->Fill( cal->pt() );
+	if (myTrig2) h_ptCalTrig->Fill( cal->pt() );
 	jetInd++;
       }
     }
@@ -104,7 +132,7 @@ void HLTPlotsExample::analyze( const Event& evt, const EventSetup& es ) {
     }
     if (ptmax > 0.){
       h_ptMuonLeading->Fill( ptmax );
-      if (myTrig) h_ptMuonTrig->Fill( ptmax );
+      if (myTrig2) h_ptMuonTrig->Fill( ptmax );
     }
   }else{
     errMsg=errMsg + "  -- No Reco Muons";
