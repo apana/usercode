@@ -11,4 +11,5 @@
 <use   name="PhysicsTools/SelectorUtils"/>
 <environment>
   <bin   file="FWLiteExample.cc"></bin>
+  <bin   file="HLTriggerRates.cc"></bin>
 </environment>
