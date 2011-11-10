@@ -63,11 +63,14 @@ int main(int argc, char* argv[])
   int TriggerPS_( ana.getParameter<int>( "TriggerPS" ) );
   uint BeginLumi_( ana.getParameter<uint>("BeginLumi") );
   uint EndLumi_  ( ana.getParameter<uint>("EndLumi") );
+  double RefLumi_( ana.getParameter<double>("RefLumi"   ));
+  double TargetLumi_( ana.getParameter<double>("TargetLumi"   ));
 
   // book a set of histograms
   fwlite::TFileService fs = fwlite::TFileService(outputHandler_.file().c_str());
   TFileDirectory dir = fs.mkdir("triggerRates");
-  TH1F* hLumiBlocks  = dir.make<TH1F>("LumiBlocks"  , "Luminosity Blocks Analysed"  ,   2000,   0.,  2000.);
+  TH1F* hLumiBlocks  = dir.make<TH1F>("LumiBlocks"  , "Events per Luminosity Block"  ,   2000,   0.,  2000.);
+  TH1F* hLumiBlocksRef  = dir.make<TH1F>("LumiBlocksTrig"  , "Events per Luminosity Block -- RefTrigger passed"  ,   2000,   0.,  2000.);
   TH1F* hHLTRates=NULL;
 
   unsigned int hltFlg=0;
@@ -136,6 +139,7 @@ int main(int argc, char* argv[])
 	}
 	if (myTrig){
 
+	  hLumiBlocksRef->Fill(ev.luminosityBlock(),1); // keep track of the lumiBlocks analysed
 	  int nTriggers=hltTriggers.size();
 	  // bool accept[nTriggers];
 	  if (hltFlg == 0){
@@ -178,14 +182,22 @@ int main(int argc, char* argv[])
   }
 
 
-  int nLumiBins=hLumiBlocks->GetNbinsX(); 
+  int nLumiBins=hLumiBlocksRef->GetNbinsX(); 
   int nLumiBlocks=0;
   for (int ibin=0; ibin<nLumiBins; ++ibin){
-    int cont=hLumiBlocks->GetBinContent(ibin+1);
+    int cont=hLumiBlocksRef->GetBinContent(ibin+1);
     if (cont>0) nLumiBlocks++;
   }
   float fact=nLumiBlocks*23.3;
-  hHLTRates->Scale(TriggerPS_/fact);
+  float LumiFact=TargetLumi_/RefLumi_;
+  hHLTRates->Scale((LumiFact*TriggerPS_)/fact);
+
+
+  double nEvtsTrg=hLumiBlocksRef->GetEntries();
+  cout << "\tNumber of events passed by reference trigger: " << int(nEvtsTrg) << "\n";
+  cout << "\tNumber of Lumi sections processed: " << nLumiBlocks << "\n";
+  cout << "\tReference trigger rate (wrt original run): " << nEvtsTrg/(fact) << " Hz \n\n";
+
   if (hHLTRates){
 
     int nbins=hHLTRates->GetNbinsX(); 
@@ -205,7 +217,6 @@ int main(int argc, char* argv[])
     cout << "\n" << endl;
   }
 
-  cout << "Number of Lumi sections processed: " << nLumiBlocks << endl;
 
   return 0;
 }
