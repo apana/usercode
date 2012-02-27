@@ -53,11 +53,14 @@ void BitNumbertoName::analyze( const Event& iEvent, const EventSetup& evSetup ) 
 
   // access L1 trigger results using public methods from L1GtUtils
   // always check on error code returned by that method
-  std::string triggerAlgTechTrig = "PhysicsAlgorithms";
+  // std::string triggerAlgTechTrig = "PhysicsAlgorithms";
+  
+  L1GtUtils::TriggerCategory trigCategory = L1GtUtils::AlgorithmTrigger;
 
   int iErrorCode = -1;
   const int pfSetIndexPhysicsAlgorithms = m_l1GtUtils.prescaleFactorSetIndex(
-									     iEvent, triggerAlgTechTrig, iErrorCode);
+					iEvent, trigCategory, iErrorCode);
+
   if (iErrorCode == 0) {
     cout << "%Prescale set index: " <<  pfSetIndexPhysicsAlgorithms << endl;
   }else{
@@ -77,7 +80,7 @@ void BitNumbertoName::analyze( const Event& iEvent, const EventSetup& evSetup ) 
 
   const std::vector<int>& pfSetPhysicsAlgorithms =
     m_l1GtUtils.prescaleFactorSet(iEvent, 
-				  triggerAlgTechTrig,
+				  trigCategory,
 				  iErrorCode);
 
   if (iErrorCode == 0) {
@@ -86,7 +89,7 @@ void BitNumbertoName::analyze( const Event& iEvent, const EventSetup& evSetup ) 
     //ccla add stuff so we can get the name corresponding to bit number
     edm::InputTag l1GtRecordInputTag;
     edm::InputTag l1GtReadoutRecordInputTag;
-    m_l1GtUtils.getInputTag(iEvent, l1GtRecordInputTag, l1GtReadoutRecordInputTag);
+    m_l1GtUtils.getL1GtRecordInputTag(iEvent, l1GtRecordInputTag, l1GtReadoutRecordInputTag);
     cout << "l1GtRecordInputTag :" << l1GtRecordInputTag << endl;
     cout << "l1GtReadoutRecordInputTag :" << l1GtReadoutRecordInputTag << endl;
 

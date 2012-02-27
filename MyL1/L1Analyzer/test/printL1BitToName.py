@@ -1,15 +1,16 @@
 import FWCore.ParameterSet.Config as cms
 
 
-GLOBALTAG = 'START3X_V25B::All'
+overRideL1=True  # override the L1 menu
+isMC = False
 
 process = cms.Process("L1BitToName")
 
 
 ### Input source ###################################################
 
-# inputfile="/store/mc/Spring10/MinBias/GEN-SIM-RAW/START3X_V25B-v1/0104/FECFDECD-9739-DF11-A00E-001A92971AAA.root"
-inputfile="file:L1AlgoSkim_MinimumBiasMC.root"
+inputfile="/store/data/Run2011B/L1JetHPF/RAW/v1/000/178/208/2AC71D39-5AF3-E011-9DEE-003048D3756A.root"
+# inputfile="file:L1AlgoSkim_MinimumBiasMC.root"
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(inputfile)
 )
@@ -25,9 +26,27 @@ process.load('Configuration/StandardSequences/GeometryIdeal_cff')
 process.load('Configuration/StandardSequences/MagneticField_38T_cff')
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 
-#process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
-#process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
-process.GlobalTag.globaltag = GLOBALTAG
+process.GlobalTag.connect   = 'frontier://FrontierProd/CMS_COND_31X_GLOBALTAG'
+process.GlobalTag.pfnPrefix = cms.untracked.string('frontier://FrontierProd/')
+from Configuration.AlCa.autoCond import autoCond
+process.GlobalTag.globaltag = autoCond['hltonline']
+if isMC:
+    process.GlobalTag.globaltag = autoCond['startup']
+
+# GLOBALTAG = 'GR_H_V22::All'
+# process.GlobalTag.globaltag = GLOBALTAG
+
+if overRideL1:
+    luminosityDirectory = "startup"
+    useXmlFile = 'L1Menu_Collisions2012_v0_L1T_Scales_20101224_Imp0_0x1027.xml'
+
+    process.load('L1TriggerConfig.L1GtConfigProducers.l1GtTriggerMenuXml_cfi')
+    process.l1GtTriggerMenuXml.TriggerMenuLuminosity = luminosityDirectory
+    process.l1GtTriggerMenuXml.DefXmlFile = useXmlFile
+
+    process.load('L1TriggerConfig.L1GtConfigProducers.L1GtTriggerMenuConfig_cff')
+    process.es_prefer_l1GtParameters = cms.ESPrefer('L1GtTriggerMenuXmlProducer','l1GtTriggerMenuXml')
+
 
 ###################################################################
 
@@ -36,7 +55,11 @@ process.GlobalTag.globaltag = GLOBALTAG
 import EventFilter.L1GlobalTriggerRawToDigi.l1GtUnpack_cfi
 process.hltGtDigis = EventFilter.L1GlobalTriggerRawToDigi.l1GtUnpack_cfi.l1GtUnpack.clone()
 process.hltGtDigis.DaqGtInputTag = "rawDataCollector"
-process.hltGtDigis.UnpackBxInEvent = 5
+# process.hltGtDigis.UnpackBxInEvent = 5
+
+process.load('Configuration/StandardSequences/RawToDigi_Data_cff')
+# process.l1GtTrigReport.L1GtRecordInputTag = "gtDigis"
+# process.p = cms.Path(process.RawToDigi+process.l1GtTrigReport+process.l1GtAnalyzer)
 
 ###################################################################
 
@@ -48,7 +71,8 @@ process.l1bittoname = cms.EDAnalyzer("BitNumbertoName",
 #process.l1bittoname.L1GtRecordInputTag = "hltGtDigis"
 #process.l1bittoname.L1GtReadoutRecordInputTag = "hltGtDigis"
 
-process.p = cms.Path(process.hltGtDigis + process.l1bittoname)
+# process.p = cms.Path(process.hltGtDigis + process.l1bittoname)
+process.p = cms.Path(process.RawToDigi + process.l1bittoname)
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
