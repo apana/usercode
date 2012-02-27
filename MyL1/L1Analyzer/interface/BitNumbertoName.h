@@ -29,9 +29,10 @@ public:
   BitNumbertoName( const edm::ParameterSet & );
 
 private:
-  void beginJob();
-  void analyze( const edm::Event& , const edm::EventSetup& );
-  void endJob();
+  virtual void beginJob();
+  virtual void beginRun(const edm::Run&, const edm::EventSetup&);
+  virtual void analyze( const edm::Event& , const edm::EventSetup& );
+  virtual void endJob();
 
   L1GtUtils m_l1GtUtils;
 

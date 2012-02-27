@@ -8,8 +8,6 @@
 // which defines the value of the strings CaloJetAlgorithm and GenJetAlgorithm.
 BitNumbertoName::BitNumbertoName( const ParameterSet & cfg ) {
   cout << " Beginning Analysis " << endl;
-  l1GtRecordInputTag = cfg.getParameter<InputTag>( "L1GtRecordInputTag" );
-  l1GtReadoutRecordInputTag = cfg.getParameter<InputTag>( "L1GtReadoutRecordInputTag" );
   outFile        = cfg.getParameter<string>( "BitsAndPrescales" );
   initL1=false;
   initAnalysis=false;
@@ -19,29 +17,41 @@ void BitNumbertoName::beginJob() {
 
 }
 
+void BitNumbertoName::beginRun( const Run& iRun, const EventSetup& evSetup ) {
+
+  bool useL1EventSetup = true;
+  bool useL1GtTriggerMenuLite = false;
+
+  // m_l1GtUtils.retrieveL1EventSetup(evSetup);
+  m_l1GtUtils.getL1GtRunCache(iRun, evSetup, useL1EventSetup,
+			      useL1GtTriggerMenuLite);
+
+}
+
 void BitNumbertoName::analyze( const Event& iEvent, const EventSetup& evSetup ) {
 
   string errMsg("");
 
-  m_l1GtUtils.retrieveL1EventSetup(evSetup);
+  bool useL1EventSetup = true;
+  bool useL1GtTriggerMenuLite = false;
+
+  // m_l1GtUtils.retrieveL1EventSetup(evSetup);
+  m_l1GtUtils.getL1GtRunCache(iEvent, evSetup, useL1EventSetup,
+			      useL1GtTriggerMenuLite);
+
 
   edm::ESHandle<L1GtTriggerMenu> l1GtMenu;
   evSetup.get<L1GtTriggerMenuRcd>().get(l1GtMenu);
-  const L1GtTriggerMenu* m_l1GtMenu = l1GtMenu.product();
-
+  const L1GtTriggerMenu* m_l1GtMenu = l1GtMenu.product();  
   const AlgorithmMap* m_algorithmMap = &(m_l1GtMenu->gtAlgorithmMap());
-  const AlgorithmMap* m_algorithmAliasMap = &(m_l1GtMenu->gtAlgorithmAliasMap());
-  const AlgorithmMap* m_technicalTriggerMap = &(m_l1GtMenu->gtTechnicalTriggerMap());
-
+  
   unsigned int maxLen=0;
-
   for (CItAlgo algo = m_algorithmMap->begin(); algo!=m_algorithmMap->end(); ++algo) {
-    cout << "Name: " << (algo->second).algoName() << " Alias: " << (algo->second).algoAlias() << endl;
+    // cout << "Name: " << (algo->second).algoName() << " Alias: " << (algo->second).algoAlias() << endl;
     int itrig = (algo->second).algoBitNumber();
     algoBitToName[itrig] = (algo->second).algoName();
     if (algoBitToName[itrig].length()>maxLen) maxLen=algoBitToName[itrig].length();
     }
-
 
 
   cout << "\nL1 trigger menu: \n" << m_l1GtUtils.l1TriggerMenu()
@@ -87,13 +97,11 @@ void BitNumbertoName::analyze( const Event& iEvent, const EventSetup& evSetup ) 
 
 
     //ccla add stuff so we can get the name corresponding to bit number
-    edm::InputTag l1GtRecordInputTag;
-    edm::InputTag l1GtReadoutRecordInputTag;
-    m_l1GtUtils.getL1GtRecordInputTag(iEvent, l1GtRecordInputTag, l1GtReadoutRecordInputTag);
-    cout << "l1GtRecordInputTag :" << l1GtRecordInputTag << endl;
-    cout << "l1GtReadoutRecordInputTag :" << l1GtReadoutRecordInputTag << endl;
-
-    
+    //  edm::InputTag l1GtRecordInputTag;
+    //  edm::InputTag l1GtReadoutRecordInputTag;
+    //  m_l1GtUtils.getL1GtRecordInputTag(iEvent, l1GtRecordInputTag, l1GtReadoutRecordInputTag);
+    //  cout << "l1GtRecordInputTag :" << l1GtRecordInputTag << endl;
+    //  cout << "l1GtReadoutRecordInputTag :" << l1GtReadoutRecordInputTag << endl;
     //ccla end 
 
     cout << "\nPhysics algorithms: prescale factor set for run "

@@ -10,6 +10,7 @@ process = cms.Process("L1BitToName")
 ### Input source ###################################################
 
 inputfile="/store/data/Run2011B/L1JetHPF/RAW/v1/000/178/208/2AC71D39-5AF3-E011-9DEE-003048D3756A.root"
+# inputfile="/store/data/Run2011B/MinimumBias/RAW/v1/000/180/250/007DE4B2-FB02-E111-A378-00215AEDFD74.root"
 # inputfile="file:L1AlgoSkim_MinimumBiasMC.root"
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(inputfile)
@@ -52,39 +53,35 @@ if overRideL1:
 
 # unpack the GT
 
-import EventFilter.L1GlobalTriggerRawToDigi.l1GtUnpack_cfi
-process.hltGtDigis = EventFilter.L1GlobalTriggerRawToDigi.l1GtUnpack_cfi.l1GtUnpack.clone()
-process.hltGtDigis.DaqGtInputTag = "rawDataCollector"
-# process.hltGtDigis.UnpackBxInEvent = 5
+# import EventFilter.L1GlobalTriggerRawToDigi.l1GtUnpack_cfi
+# process.hltGtDigis = EventFilter.L1GlobalTriggerRawToDigi.l1GtUnpack_cfi.l1GtUnpack.clone()
 
+process.load("L1Trigger.GlobalTriggerAnalyzer.l1GtTrigReport_cfi")
 process.load('Configuration/StandardSequences/RawToDigi_Data_cff')
-# process.l1GtTrigReport.L1GtRecordInputTag = "gtDigis"
-# process.p = cms.Path(process.RawToDigi+process.l1GtTrigReport+process.l1GtAnalyzer)
+process.l1GtTrigReport.L1GtRecordInputTag = "gtDigis"
 
 ###################################################################
 
 process.l1bittoname = cms.EDAnalyzer("BitNumbertoName",
-                                     L1GtRecordInputTag  = cms.InputTag("hltGtDigis"),
-                                     L1GtReadoutRecordInputTag = cms.InputTag("hltGtDigis"),
                                      BitsAndPrescales=cms.string("BitsAndPrescales.txt")
                                      )
-#process.l1bittoname.L1GtRecordInputTag = "hltGtDigis"
-#process.l1bittoname.L1GtReadoutRecordInputTag = "hltGtDigis"
 
-# process.p = cms.Path(process.hltGtDigis + process.l1bittoname)
-process.p = cms.Path(process.RawToDigi + process.l1bittoname)
+process.p = cms.Path(process.RawToDigi + process.l1GtTrigReport + process.l1bittoname)
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.debugModules = ['l1bittoname']
-process.MessageLogger.cout = cms.untracked.PSet(
-    INFO = cms.untracked.PSet(
-        limit = cms.untracked.int32(-1)
-    ),
-    threshold = cms.untracked.string('DEBUG'), ## DEBUG 
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.categories.append('L1GtTrigReport')
 
-    DEBUG = cms.untracked.PSet( ## DEBUG, all messages  
-
-        limit = cms.untracked.int32(-1)
-    )
-)
+##process.MessageLogger.debugModules = ['l1bittoname']
+##process.MessageLogger.cout = cms.untracked.PSet(
+##    INFO = cms.untracked.PSet(
+##        limit = cms.untracked.int32(-1)
+##    ),
+##    threshold = cms.untracked.string('DEBUG'), ## DEBUG 
+##
+##    DEBUG = cms.untracked.PSet( ## DEBUG, all messages  
+##
+##        limit = cms.untracked.int32(-1)
+##    )
+##)
