@@ -12,4 +12,5 @@
 <environment>
   <bin   file="FWLiteExample.cc"></bin>
   <bin   file="HLTriggerRates.cc"></bin>
+  <bin   file="CompJets.cc"></bin>
 </environment>
