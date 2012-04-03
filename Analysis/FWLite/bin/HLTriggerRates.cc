@@ -12,19 +12,26 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
 
+#include "DataFormats/JetReco/interface/PFJet.h"
+#include "DataFormats/JetReco/interface/PFJetCollection.h"
+#include "CommonTools/Utils/interface/PtComparator.h"
+
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "PhysicsTools/FWLite/interface/TFileService.h"
+
+#include "Analysis/FWLite/interface/myRootIO.h"
 
 typedef std::map<std::string,bool> trigmap_t;
 typedef std::map<std::string,bool>::iterator trigmapiter_t;
 
 trigmap_t getHLTResults(const edm::TriggerResults&, const edm::TriggerNames&);
-
+void BookJetHistograms(TFileDirectory);
 
 using std::cout;
 using std::endl;
 using std::string;
+using reco::PFJet;
 
 int main(int argc, char* argv[]) 
 {
@@ -59,7 +66,9 @@ int main(int argc, char* argv[])
   const edm::ParameterSet& ana = process.getParameter<edm::ParameterSet>("triggerAnalyzer");
   edm::InputTag RefTriggerResults_( ana.getParameter<edm::InputTag>("RefTriggerResults") );
   edm::InputTag TriggerResults_( ana.getParameter<edm::InputTag>("TriggerResults") );
+  edm::InputTag InputJets_( ana.getParameter<edm::InputTag>("InputJets") );
   string RefTrigger_( ana.getParameter<string>( "RefTrigger" ) );
+  string Trigger_( ana.getParameter<string>( "Trigger" ) );
   int TriggerPS_( ana.getParameter<int>( "TriggerPS" ) );
   uint BeginLumi_( ana.getParameter<uint>("BeginLumi") );
   uint EndLumi_  ( ana.getParameter<uint>("EndLumi") );
@@ -72,6 +81,8 @@ int main(int argc, char* argv[])
   TH1F* hLumiBlocks  = dir.make<TH1F>("LumiBlocks"  , "Events per Luminosity Block"  ,   2000,   0.,  2000.);
   TH1F* hLumiBlocksRef  = dir.make<TH1F>("LumiBlocksTrig"  , "Events per Luminosity Block -- RefTrigger passed"  ,   2000,   0.,  2000.);
   TH1F* hHLTRates=NULL;
+
+  BookJetHistograms(dir);
 
   unsigned int hltFlg=0;
   
@@ -171,6 +182,65 @@ int main(int argc, char* argv[])
 	    bool accept = iter->second;
 	    if(accept) hHLTRates->Fill(trigName.c_str(),1);
 	  }
+
+	  trigmapiter_t mytrig_iter=hltTriggers.find(Trigger_);
+	  bool yesTrig=false;
+	  if (mytrig_iter==hltTriggers.end()){
+	    cout << "Could not find trigger path with name: " << Trigger_ << endl;
+	    exit(0);
+	  }else{
+	    yesTrig=mytrig_iter->second;
+	  }
+
+	  edm::Handle<std::vector<PFJet> > PFjets;
+	  event.getByLabel(InputJets_, PFjets);
+	  if (! PFjets.isValid()){
+	    // std::cout << " " << std::endl; 
+	    continue;
+	  }
+
+	  int nj=PFjets->size();
+	  fillHist("Njets",nj,1.);
+
+	  //std::cout << " Number of jets: " << nj << std::endl; 
+	  // Sort the jet collections
+	  reco::PFJetCollection sortedPFjets;
+	  sortedPFjets = *PFjets;
+	  GreaterByPt<PFJet>   pTComparator_PF;
+	  std::sort(sortedPFjets.begin(),sortedPFjets.end(),pTComparator_PF);
+
+	  nj=sortedPFjets.size();
+	  // std::cout << " Number of sorted jets: " << nj << std::endl; 
+	  int ijet=0;
+	  for(std::vector<PFJet>::const_iterator jet=sortedPFjets.begin(); jet!=sortedPFjets.end() && ijet < 1; ++jet){
+	    ijet++;
+	    if (ijet==1){
+	      double jpt = jet->pt ();
+	      double jeta = jet->eta ();
+	      fillHist("jetPt",jpt,1.);
+	      if (jpt >40 ){
+		fillHist("jetEta40",jeta,1.);
+		if (jpt >60 ) fillHist("jetEta60",jeta,1.);
+		if (jpt >80 ) fillHist("jetEta80",jeta,1.);
+		if (jpt >100) fillHist("jetEta100",jeta,1.);
+		if (yesTrig) {
+		  fillHist("jetEtaTrig40",jeta,1.);
+		  if (jpt >60 ) fillHist("jetEtaTrig60",jeta,1.);
+		  if (jpt >80 ) fillHist("jetEtaTrig80",jeta,1.);
+		  if (jpt >100) fillHist("jetEtaTrig100",jeta,1.);
+		  if (jeta<-4.){
+		    if (jeta>-4.5){
+		      fillHist("jetPt_e1",jpt,1.);
+		    }else{
+		      fillHist("jetPt_e2",jpt,1.);
+		    }
+		  }
+		}
+		//if (yesTrig and jeta<-4.5)
+		//  cout << "XXX: " << jeta << "\t" << jpt << endl;
+	      }
+	    }
+	  }
 	} // end of myTrig block
       }  
       // close input file
@@ -192,12 +262,27 @@ int main(int argc, char* argv[])
   float LumiFact=TargetLumi_/RefLumi_;
   hHLTRates->Scale((LumiFact*TriggerPS_)/fact);
 
+  sclHist("jetPt",(LumiFact*TriggerPS_)/fact);
+  sclHist("jetPt_e1",(LumiFact*TriggerPS_)/fact);
+  sclHist("jetPt_e2",(LumiFact*TriggerPS_)/fact);
+
+  sclHist("jetEta40",(LumiFact*TriggerPS_)/fact);
+  sclHist("jetEta60",(LumiFact*TriggerPS_)/fact);
+  sclHist("jetEta80",(LumiFact*TriggerPS_)/fact);
+  sclHist("jetEta100",(LumiFact*TriggerPS_)/fact);
+  sclHist("jetEtaTrig40",(LumiFact*TriggerPS_)/fact);
+  sclHist("jetEtaTrig60",(LumiFact*TriggerPS_)/fact);
+  sclHist("jetEtaTrig80",(LumiFact*TriggerPS_)/fact);
+  sclHist("jetEtaTrig100",(LumiFact*TriggerPS_)/fact);
 
   double nEvtsTrg=hLumiBlocksRef->GetEntries();
   cout << "\tNumber of events passed by reference trigger: " << int(nEvtsTrg) << "\n";
   cout << "\tNumber of Lumi sections processed: " << nLumiBlocks << "\n";
   cout << "\tReference trigger rate (wrt original run): " << nEvtsTrg/(fact) << " Hz \n\n";
 
+
+
+  
   if (hHLTRates){
 
     int nbins=hHLTRates->GetNbinsX(); 
@@ -249,4 +334,47 @@ trigmap_t getHLTResults(const edm::TriggerResults& hltresults,
   }
 
   return hltTriggerMap;
+}
+
+void BookJetHistograms(TFileDirectory dir){
+
+  TString hname;
+  TString htitle;
+
+  hname="Njets"; htitle="Number of PF jets in event";
+  m_HistNames[hname]=Book1dHist(dir,hname,htitle, 100,   0., 100.); 
+
+
+  //hists vs pT
+  hname="jetPt"; htitle="jet p_{T}";
+  m_HistNames[hname]=Book1dHist(dir,hname,htitle, 1000,   0., 5000.); 
+
+  hname="jetPt_e1"; htitle="jet p_{T} -4.5< #eta < -4.";
+  m_HistNames[hname]=Book1dHist(dir,hname, htitle, 1000, 0., 5000.); 
+
+  hname="jetPt_e2"; htitle="jet p_{T} -5.0< #eta < -4.5";
+  m_HistNames[hname]=Book1dHist(dir,hname, htitle, 1000, 0., 5000.);
+
+  //hists vs eta
+  int neta=20;
+  double etamin=-5.,etamax=5.;
+
+  hname="jetEta40"; htitle="jet #eta p_{T} > 40";
+  m_HistNames[hname]=Book1dHist(dir,hname, htitle, neta, etamin, etamax);
+  hname="jetEta60"; htitle="jet #eta p_{T} > 60";
+  m_HistNames[hname]=Book1dHist(dir,hname, htitle, neta, etamin, etamax);
+  hname="jetEta80"; htitle="jet #eta p_{T} > 80";
+  m_HistNames[hname]=Book1dHist(dir,hname, htitle, neta, etamin, etamax);
+  hname="jetEta100"; htitle="jet #eta p_{T} > 100";
+  m_HistNames[hname]=Book1dHist(dir,hname, htitle, neta, etamin, etamax);
+
+  hname="jetEtaTrig40"; htitle="jet #eta p_{T} > 40  -- Triggered ";
+  m_HistNames[hname]=Book1dHist(dir,hname, htitle, neta, etamin, etamax);
+  hname="jetEtaTrig60"; htitle="jet #eta p_{T} > 60  -- Triggered";
+  m_HistNames[hname]=Book1dHist(dir,hname, htitle, neta, etamin, etamax);
+  hname="jetEtaTrig80"; htitle="jet #eta p_{T} > 80  -- Triggered";
+  m_HistNames[hname]=Book1dHist(dir,hname, htitle, neta, etamin, etamax);
+  hname="jetEtaTrig100"; htitle="jet #eta p_{T} > 100  -- Triggered";
+  m_HistNames[hname]=Book1dHist(dir,hname, htitle, neta, etamin, etamax);
+
 }
