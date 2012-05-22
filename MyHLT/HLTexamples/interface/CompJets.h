@@ -8,6 +8,7 @@
 #include <TFile.h>
 #include <TCanvas.h>
 #include <cmath>
+#include <string>
 
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -40,6 +41,8 @@ private:
   void endJob();
 
   void getHLTResults(const edm::TriggerResults&, const edm::TriggerNames&);
+  void plotJetPtandEta(const reco::PFJetCollection &, const std::string&);
+
   void fillHist(const TString& histName, const Double_t& value, const Double_t& wt=1.0);
   void fill2DHist(const TString& histName, const Double_t& x,const Double_t& y,const Double_t& wt=1.0);
   void fill3DHist(const TString& histName, const Double_t& x,const Double_t& y,const Double_t& z,const Double_t& wt=1.0);

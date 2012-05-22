@@ -75,6 +75,10 @@ void CompJets::analyze( const Event& evt, const EventSetup& es ) {
   Handle<GenJetCollection>  genJets;
   evt.getByLabel( GenJetCollection_, genJets );
 
+  if (Jets1.isValid()) plotJetPtandEta(*Jets1,"coll1");
+  if (Jets2.isValid()) plotJetPtandEta(*Jets2,"coll2");
+
+
   if (Jets1.isValid() && Jets2.isValid() ) { 
     //Loop over the PFJets and fill some histograms
     int jetInd = 0;
@@ -117,8 +121,11 @@ void CompJets::analyze( const Event& evt, const EventSetup& es ) {
       
       if (drmin<drMatch()){
 	double rat=miter->pt()/jpt;
-	fill3DHist("jetResp3D_jcol1",jpt,jet1->eta(),rat,1.);
-	fill3DHist("jetResp3D_jcol2",miter->pt(),miter->eta(),rat,1.);
+	fill3DHist("Reco2overReco1_vsReco1",jpt,jet1->eta(),rat,1.);
+	fill3DHist("Reco2overReco1_vsReco2",miter->pt(),miter->eta(),rat,1.);
+
+	fill3DHist("Reco1overReco2_vsReco1",jpt,jet1->eta(),1./rat,1.);
+	fill3DHist("Reco1overReco2_vsReco2",miter->pt(),miter->eta(),1./rat,1.);
 	
 	if (jpt>30 && jpt<=40){
 	  if (fabs(jet1->eta())<1.1){
@@ -232,6 +239,17 @@ void CompJets::getHLTResults( const edm::TriggerResults& hltresults,
        hltTriggerMap.insert(valType(trigName,accept));
      else
        trig_iter->second=accept;
+  }
+}
+
+void CompJets::plotJetPtandEta(const PFJetCollection& Jets, const string& suffix){
+
+  for( PFJetCollection::const_iterator jet = Jets.begin(); jet != Jets.end(); ++ jet ) {
+
+      double pt=jet->pt();
+      double eta=jet->eta();
+
+      fill2DHist("JetPtAndEta_" + suffix ,pt,eta,1.);
   }
 }
 
@@ -356,9 +374,19 @@ void CompJets::bookHistograms() {
   int njr=20;
   double jrmin=0.,jrmax=2.;
 
-  hname="jetResp3D_jcol1"; htitle="Jet response vs jet collection 1 pt,eta";  // pt, eta, resp
+  hname="JetPtAndEta_coll1"; htitle="Jet p_{T} and #eta; collection 1 ";  // pt, eta, resp
+  m_HistNames2D[hname]=Book2dHist(hname, htitle, 100, 0. ,1000., neta, etamin, etamax);
+  hname="JetPtAndEta_coll2"; htitle="Jet p_{T} and #eta; collection 2 ";  // pt, eta, resp
+  m_HistNames2D[hname]=Book2dHist(hname, htitle, 100, 0. ,1000., neta, etamin, etamax);
+
+  hname="Reco2overReco1_vsReco1"; htitle="p_{T} (coll2) / p_{T} (coll1) vs jet collection 1 pt,eta";  // pt, eta, resp
   m_HistNames3D[hname]=Book3dHist(hname, htitle, 100, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
-  hname="jetResp3D_jcol2"; htitle="Jet response vs jet collection 2 pt,eta";
+  hname="Reco2overReco1_vsReco2"; htitle="p_{T} (coll2) / p_{T} (coll1) vs jet collection 2 pt,eta";
+  m_HistNames3D[hname]=Book3dHist(hname, htitle, 100, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
+
+  hname="Reco1overReco2_vsReco1"; htitle="p_{T} (coll1) / p_{T} (coll2) vs jet collection 1 pt,eta";  // pt, eta, resp
+  m_HistNames3D[hname]=Book3dHist(hname, htitle, 100, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
+  hname="Reco1overReco2_vsReco2"; htitle="p_{T} (coll1) / p_{T} (coll2) vs jet collection 2 pt,eta";
   m_HistNames3D[hname]=Book3dHist(hname, htitle, 100, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
 
   hname="GenReco1_jetResp3D"; htitle="Jet response Coll1/Gen pt,eta";
