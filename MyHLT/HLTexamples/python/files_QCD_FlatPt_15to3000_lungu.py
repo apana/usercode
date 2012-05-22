@@ -1,0 +1,16 @@
+inputFiles=[
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_5_1_yFv.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_10_1_1oV.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_7_1_ogb.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_3_1_mQY.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_1_1_McW.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_9_1_8nt.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_13_1_OWu.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_15_1_XD7.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_14_1_8AX.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_11_1_Ie8.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_6_1_gQ7.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_8_1_N2t.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_2_1_4Lt.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/JEC_v7_QCD_Pt-15to3000_TuneZ2star_Flat_8TeV_pythia6_lungu/outputHLTDQMResults_4_1_6uw.root",
+]

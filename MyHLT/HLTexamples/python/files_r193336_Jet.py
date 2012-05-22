@@ -1,0 +1,18 @@
+inputFiles=[
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_10_1_zZq.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_14_1_ARg.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_3_1_BHg.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_9_1_4PM.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_13_1_14R.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_4_1_sgw.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_1_1_tEC.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_7_1_zPA.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_15_1_4Fp.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_5_1_4W4.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_6_1_d61.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_12_1_2iy.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_16_1_ZWL.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_2_1_3AW.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_8_1_czk.root",
+	"dcache:/pnfs/cms/WAX/11/store/user/lpctrig/apana/PFCorJets/r193336_JEC_v7_Jet/outputHLTDQMResults_11_1_nxn.root",
+]
