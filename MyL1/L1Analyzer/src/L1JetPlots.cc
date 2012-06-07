@@ -241,7 +241,7 @@ void L1JetPlots::L1Analysis(const reco::CaloJetCollection& caloJets,
   //CalJetIter cIter;
   //GenJetIter gIter;
 
-  //cout << "%doL1Analysis -- Number of l1jets:   " << l1ForJets.size() << endl;
+  // cout << "%doL1Analysis -- Number of l1jets:   " << l1ForJets.size() << endl;
   //cout << "%doL1Analysis -- Number of calojets: " << caloJets.size() << endl;
   //cout << "%doL1Analysis -- Number of pfjets: " << pfJets.size() << endl;
 
@@ -306,7 +306,7 @@ void L1JetPlots::L1Analysis(const reco::CaloJetCollection& caloJets,
 
   if (maxL1Tau>=20.) nL1TauJet20++;
 
-  if (caloJets.size()>0){
+  if (doCaloJets && caloJets.size()>0){
     CaloJetCollection::const_iterator cal = caloJets.begin();
     ptCalL->Fill( cal->pt() );
     if (maxL1>=16.)ptCalL16->Fill( cal->pt() );
@@ -317,7 +317,7 @@ void L1JetPlots::L1Analysis(const reco::CaloJetCollection& caloJets,
     if (maxL1>=128.)ptCalL128->Fill( cal->pt() );
   }
 
-  if (pfJets.size()>0){
+  if (doPFJets && pfJets.size()>0){
     PFJetCollection::const_iterator pf = pfJets.begin();
     ptPFL->Fill( pf->pt() );
     if (maxL1>=16.)ptPFL16->Fill( pf->pt() );
