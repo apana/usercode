@@ -11,20 +11,19 @@
 L1JetPlots::L1JetPlots( const ParameterSet & cfg ) {
   cout << " Beginning L1Jet Analysis " << endl;
   CaloJetAlgorithm = cfg.getParameter<InputTag>( "CaloJetAlgorithm" );
+  PFJetAlgorithm   = cfg.getParameter<InputTag>( "PFJetAlgorithm"  );
   GenJetAlgorithm  = cfg.getParameter<InputTag>( "GenJetAlgorithm" );
   recmet_          = cfg.getParameter< InputTag > ("recmet");
   genmet_          = cfg.getParameter< InputTag > ("genmet");
   l1CollectionsTag_= cfg.getParameter< InputTag > ("l1collections");
 
   errCnt=0;
-  nL1Jet6=0;
-  nL1Jet10=0;
-  nL1Jet15=0;
-  nL1Jet20=0;
-  nL1Jet30=0;
-  nL1Jet40=0;
-  nL1Jet50=0;
-  nL1Jet60=0;
+  nL1Jet16=0;
+  nL1Jet36=0;
+  nL1Jet52=0;
+  nL1Jet68=0;
+  nL1Jet92=0;
+  nL1Jet128=0;
 
   nL1TauJet20=0;
 
@@ -32,12 +31,28 @@ L1JetPlots::L1JetPlots( const ParameterSet & cfg ) {
 
 void L1JetPlots::beginJob() {
 
-  ptCal =  fs->make<TH1F>( "ptCal",  "p_{T} of leading CaloJets", 50, 0, 500 );
+  ptCal =  fs->make<TH1F>( "ptCal",  "p_{T} of leading CaloJets", 500, 0, 500 );
   etaCal = fs->make<TH1F>( "etaCal", "#eta of leading CaloJets", 52, -5.2, 5.2 );
   phiCal = fs->make<TH1F>( "phiCal", "#phi of leading CaloJets", 50, -M_PI, M_PI );
-  ptGen =  fs->make<TH1F>( "ptGen",  "p_{T} of leading GenJets", 50, 0, 500 );
+  ptGen =  fs->make<TH1F>( "ptGen",  "p_{T} of leading GenJets", 500, 0, 500 );
   etaGen = fs->make<TH1F>( "etaGen", "#eta of leading GenJets", 52, -5.2, 5.2 );
   phiGen = fs->make<TH1F>( "phiGen", "#phi of leading GenJets", 50, -M_PI, M_PI );
+
+  ptCalL  =  fs->make<TH1F>( "ptCalL",  "p_{T} of leading CaloJets -- L1Jet16", 500, 0, 500 );
+  ptCalL16  =  fs->make<TH1F>( "ptCalL16",  "p_{T} of leading CaloJets -- L1Jet16", 500, 0, 500 );
+  ptCalL36  =  fs->make<TH1F>( "ptCalL36",  "p_{T} of leading CaloJets -- L1Jet36", 500, 0, 500 );
+  ptCalL52  =  fs->make<TH1F>( "ptCalL52",  "p_{T} of leading CaloJets -- L1Jet52", 500, 0, 500 );
+  ptCalL68  =  fs->make<TH1F>( "ptCalL68",  "p_{T} of leading CaloJets -- L1Jet68", 500, 0, 500 );
+  ptCalL92  =  fs->make<TH1F>( "ptCalL92",  "p_{T} of leading CaloJets -- L1Jet92", 500, 0, 500 );
+  ptCalL128 =  fs->make<TH1F>( "ptCalL128",  "p_{T} of leading CaloJets -- L1Jet128", 500, 0, 500 );
+
+  ptPFL  =  fs->make<TH1F>( "ptPFL",  "p_{T} of leading PFJets -- L1Jet16", 500, 0, 500 );
+  ptPFL16  =  fs->make<TH1F>( "ptPFL16",  "p_{T} of leading PFJets -- L1Jet16", 500, 0, 500 );
+  ptPFL36  =  fs->make<TH1F>( "ptPFL36",  "p_{T} of leading PFJets -- L1Jet36", 500, 0, 500 );
+  ptPFL52  =  fs->make<TH1F>( "ptPFL52",  "p_{T} of leading PFJets -- L1Jet52", 500, 0, 500 );
+  ptPFL68  =  fs->make<TH1F>( "ptPFL68",  "p_{T} of leading PFJets -- L1Jet68", 500, 0, 500 );
+  ptPFL92  =  fs->make<TH1F>( "ptPFL92",  "p_{T} of leading PFJets -- L1Jet92", 500, 0, 500 );
+  ptPFL128 =  fs->make<TH1F>( "ptPFL128",  "p_{T} of leading PFJets -- L1Jet128", 500, 0, 500 );
 
   int nbins=50;
   Double_t min=0.,max=150.;
@@ -124,36 +139,42 @@ void L1JetPlots::beginJob() {
 void L1JetPlots::analyze( const Event& evt, const EventSetup& es ) {
 
   string errMsg("");
-  doCaloJets=true; doGenJets=true; doCaloMET=true; doGenMET=true, doL1Jets=true;
+  doCaloJets=true; doGenJets=true; doCaloMET=true; doGenMET=true, doL1Jets=true; doPFJets=true;
 
   //Get the collections
   Handle<CaloJetCollection> caloJets, caloJetsDummy;
+  Handle<PFJetCollection> pfJets, pfJetsDummy;
   Handle<GenJetCollection> genJets, genJetsDummy;
   Handle<CaloMETCollection> recmet, recmetDummy;
   Handle<GenMETCollection>  genmet, genmetDummy;
   Handle<l1extra::L1JetParticleCollection> l1CenJets,l1ForJets,l1TauJets,l1jetsDummy;
 
   evt.getByLabel( CaloJetAlgorithm, caloJets );
+  evt.getByLabel( PFJetAlgorithm,  pfJets );
   evt.getByLabel( GenJetAlgorithm, genJets );
   evt.getByLabel( recmet_,recmet );
   evt.getByLabel( genmet_,genmet );
 
-  if (!caloJets.isValid()) { errMsg=errMsg + "  -- No RecJets"; caloJets = caloJetsDummy; doCaloJets =false;}
+  if (!caloJets.isValid()) { errMsg=errMsg + "  -- No CaloJets"; caloJets = caloJetsDummy; doCaloJets =false;}
+  if (!pfJets.isValid())   { errMsg=errMsg + "  -- No PFJets";  pfJets   = pfJetsDummy  ; doPFJets   =false;}
   if (!genJets.isValid())  { errMsg=errMsg + "  -- No GenJets"; genJets  = genJetsDummy ; doGenJets  =false;}
   if (!recmet.isValid())   { errMsg=errMsg + "  -- No RecMET" ; recmet   = recmetDummy  ; doCaloMET  =false;}
   if (!genmet.isValid())   { errMsg=errMsg + "  -- No GenMET" ; genmet   = genmetDummy  ; doGenMET   =false;}
 
   InputTag L1CenJetTag(edm::InputTag(l1CollectionsTag_.label(),"Central"));
+  //InputTag L1CenJetTag(edm::InputTag(l1CollectionsTag_.label(),"cenJets"));
   evt.getByLabel(L1CenJetTag,l1CenJets);
   if (! l1CenJets.isValid()) { errMsg=errMsg + "  -- No L1Jets with name: " + L1CenJetTag.label() ;
     l1CenJets = l1jetsDummy; doL1Jets=false;}
 
   InputTag L1ForJetTag(edm::InputTag(l1CollectionsTag_.label(),"Forward"));
+  //InputTag L1ForJetTag(edm::InputTag(l1CollectionsTag_.label(),"forJets"));
   evt.getByLabel(L1ForJetTag,l1ForJets);
   if (! l1ForJets.isValid()) { errMsg=errMsg + "  -- No L1Jets with name: " + L1ForJetTag.label() ;
     l1ForJets = l1jetsDummy; doL1Jets=false;}
 
   InputTag L1TauJetTag(edm::InputTag(l1CollectionsTag_.label(),"Tau"));
+  //InputTag L1TauJetTag(edm::InputTag(l1CollectionsTag_.label(),"tauJets"));
   evt.getByLabel(L1TauJetTag,l1TauJets);
   if (! l1TauJets.isValid()) { errMsg=errMsg + "  -- No L1Jets with name: " + L1TauJetTag.label() ;
     l1TauJets = l1jetsDummy; doL1Jets=false;}
@@ -195,7 +216,7 @@ void L1JetPlots::analyze( const Event& evt, const EventSetup& es ) {
     }
   }
 
-  if (doL1Jets) L1Analysis(*caloJets,*genJets,*l1CenJets,*l1ForJets,*l1TauJets);
+  if (doL1Jets) L1Analysis(*caloJets,*pfJets,*genJets,*l1CenJets,*l1ForJets,*l1TauJets);
 
   if ((errMsg != "") && (errCnt < errMax())){
     errCnt=errCnt+1;
@@ -210,6 +231,7 @@ void L1JetPlots::analyze( const Event& evt, const EventSetup& es ) {
 }
 
 void L1JetPlots::L1Analysis(const reco::CaloJetCollection& caloJets,
+			    const reco::PFJetCollection& pfJets,
 			    const reco::GenJetCollection& genJets,
 			    const l1extra::L1JetParticleCollection& l1CenJets,
 			    const l1extra::L1JetParticleCollection& l1ForJets,
@@ -221,6 +243,7 @@ void L1JetPlots::L1Analysis(const reco::CaloJetCollection& caloJets,
 
   //cout << "%doL1Analysis -- Number of l1jets:   " << l1ForJets.size() << endl;
   //cout << "%doL1Analysis -- Number of calojets: " << caloJets.size() << endl;
+  //cout << "%doL1Analysis -- Number of pfjets: " << pfJets.size() << endl;
 
 
   fillHist("L1JetCollSize",l1ForJets.size());
@@ -274,18 +297,36 @@ void L1JetPlots::L1Analysis(const reco::CaloJetCollection& caloJets,
   if (maxL1For>maxL1) maxL1=maxL1For;
   if (maxL1Tau>maxL1) maxL1=maxL1Tau;
 
-  if (maxL1>=6.) nL1Jet6++;
-  if (maxL1>=10.) nL1Jet10++;
-  if (maxL1>=15.) nL1Jet15++;
-  if (maxL1>=20.) nL1Jet20++;
-  if (maxL1>=30.) nL1Jet30++;
-  if (maxL1>=40.) nL1Jet40++;
-  if (maxL1>=50.) nL1Jet50++;
-  if (maxL1>=60.) nL1Jet60++;
+  if (maxL1>=16.) nL1Jet16++;
+  if (maxL1>=36.) nL1Jet36++;
+  if (maxL1>=52.) nL1Jet52++;
+  if (maxL1>=68.) nL1Jet68++;
+  if (maxL1>=92.) nL1Jet92++;
+  if (maxL1>=128.) nL1Jet128++;
 
   if (maxL1Tau>=20.) nL1TauJet20++;
 
+  if (caloJets.size()>0){
+    CaloJetCollection::const_iterator cal = caloJets.begin();
+    ptCalL->Fill( cal->pt() );
+    if (maxL1>=16.)ptCalL16->Fill( cal->pt() );
+    if (maxL1>=36.)ptCalL36->Fill( cal->pt() );
+    if (maxL1>=52.)ptCalL52->Fill( cal->pt() );
+    if (maxL1>=68.)ptCalL68->Fill( cal->pt() );
+    if (maxL1>=92.)ptCalL92->Fill( cal->pt() );
+    if (maxL1>=128.)ptCalL128->Fill( cal->pt() );
+  }
 
+  if (pfJets.size()>0){
+    PFJetCollection::const_iterator pf = pfJets.begin();
+    ptPFL->Fill( pf->pt() );
+    if (maxL1>=16.)ptPFL16->Fill( pf->pt() );
+    if (maxL1>=36.)ptPFL36->Fill( pf->pt() );
+    if (maxL1>=52.)ptPFL52->Fill( pf->pt() );
+    if (maxL1>=68.)ptPFL68->Fill( pf->pt() );
+    if (maxL1>=92.)ptPFL92->Fill( pf->pt() );
+    if (maxL1>=128.)ptPFL128->Fill( pf->pt() );
+  }
 }
 
 template <typename T> void L1JetPlots::mtchL1(const Double_t& eta_l1, 
@@ -334,14 +375,12 @@ template <typename T> void L1JetPlots::mtchL1(const Double_t& eta_l1,
 
 void L1JetPlots::endJob() {
 
-  cout << "Number of L1 SingleJet with pT>6: " << nL1Jet6 << endl;
-  cout << "Number of L1 SingleJet with pT>10: " << nL1Jet10 << endl;
-  cout << "Number of L1 SingleJet with pT>15: " << nL1Jet15 << endl;
-  cout << "Number of L1 SingleJet with pT>20: " << nL1Jet20 << endl;
-  cout << "Number of L1 SingleJet with pT>30: " << nL1Jet30 << endl;
-  cout << "Number of L1 SingleJet with pT>40: " << nL1Jet40 << endl;
-  cout << "Number of L1 SingleJet with pT>50: " << nL1Jet50 << endl;
-  cout << "Number of L1 SingleJet with pT>60: " << nL1Jet60 << endl;
+  cout << "Number of L1 SingleJet with pT>16: " << nL1Jet16 << endl;
+  cout << "Number of L1 SingleJet with pT>36: " << nL1Jet36 << endl;
+  cout << "Number of L1 SingleJet with pT>52: " << nL1Jet52 << endl;
+  cout << "Number of L1 SingleJet with pT>68: " << nL1Jet68 << endl;
+  cout << "Number of L1 SingleJet with pT>92: " << nL1Jet92 << endl;
+  cout << "Number of L1 SingleJet with pT>128: " << nL1Jet128 << endl;
 
   cout << "Number of L1 TauJets with pT>20: " << nL1TauJet20 << endl;
 }

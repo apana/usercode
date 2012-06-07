@@ -18,6 +18,10 @@
 #include "MyL1/L1Analyzer/interface/L1JetPlots.h"
 #include "DataFormats/JetReco/interface/CaloJetCollection.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
+
+#include "DataFormats/JetReco/interface/PFJetCollection.h"
+#include "DataFormats/JetReco/interface/PFJet.h"
+
 #include "DataFormats/JetReco/interface/GenJet.h"
 
 #include "DataFormats/METReco/interface/CaloMET.h"
@@ -54,6 +58,7 @@ private:
   void endJob();
 
   void L1Analysis( const CaloJetCollection&,
+		   const PFJetCollection&,
 		   const GenJetCollection&,
 		   const l1extra::L1JetParticleCollection&,
 		   const l1extra::L1JetParticleCollection&,
@@ -65,17 +70,20 @@ private:
   template <typename T> void mtchL1(const Double_t&, const Double_t&, const Double_t&, 
 				    const T& jets, const TString&);
 
-  edm::InputTag CaloJetAlgorithm, GenJetAlgorithm, recmet_,genmet_, l1CollectionsTag_;
+  edm::InputTag CaloJetAlgorithm, PFJetAlgorithm, GenJetAlgorithm, recmet_,genmet_, l1CollectionsTag_;
   int errCnt;
   const int errMax(){return 100;}
 
   void fillHist(const TString& histName, const Double_t& value, const Double_t& wt=1.0);
   void fill2DHist(const TString& histName, const Double_t& x,const Double_t& y,const Double_t& wt=1.0);
 
-  bool doCaloJets,doGenJets,doCaloMET,doGenMET;
+  bool doCaloJets,doGenJets,doCaloMET,doGenMET,doPFJets;
   bool doL1Jets;
 
   TH1F *ptCal, *etaCal, *phiCal;
+  TH1F *ptCalL, *ptCalL16,*ptCalL36,*ptCalL52,*ptCalL68,*ptCalL92,*ptCalL128;
+  TH1F *ptPFL, *ptPFL16,*ptPFL36,*ptPFL52,*ptPFL68,*ptPFL92,*ptPFL128;
+
   TH1F *ptGen, *etaGen, *phiGen;
 
   TH1F *MetPt, *genMetPt;
@@ -87,7 +95,7 @@ private:
   std::map<TString, TH2*> m_HistNames2D;
   std::map<TString, TH2*>::iterator hid2D;
 
-  int nL1Jet6,nL1Jet10,nL1Jet15,nL1Jet20,nL1Jet30,nL1Jet40,nL1Jet50,nL1Jet60;
+  int nL1Jet16,nL1Jet36,nL1Jet52,nL1Jet68,nL1Jet92,nL1Jet128;
   int nL1TauJet20;
 
 };
