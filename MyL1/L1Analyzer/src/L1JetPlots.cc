@@ -18,6 +18,8 @@ L1JetPlots::L1JetPlots( const ParameterSet & cfg ) {
   l1CollectionsTag_= cfg.getParameter< InputTag > ("l1collections");
 
   errCnt=0;
+  nL1Jet8=0;
+  nL1Jet12=0;
   nL1Jet16=0;
   nL1Jet36=0;
   nL1Jet52=0;
@@ -38,7 +40,9 @@ void L1JetPlots::beginJob() {
   etaGen = fs->make<TH1F>( "etaGen", "#eta of leading GenJets", 52, -5.2, 5.2 );
   phiGen = fs->make<TH1F>( "phiGen", "#phi of leading GenJets", 50, -M_PI, M_PI );
 
-  ptCalL  =  fs->make<TH1F>( "ptCalL",  "p_{T} of leading CaloJets -- L1Jet16", 500, 0, 500 );
+  ptCalL    =  fs->make<TH1F>( "ptCalL",    "p_{T} of leading CaloJets", 500, 0, 500 );
+  ptCalL8   =  fs->make<TH1F>( "ptCalL8",   "p_{T} of leading CaloJets -- L1Jet8", 500, 0, 500 );
+  ptCalL12  =  fs->make<TH1F>( "ptCalL12",  "p_{T} of leading CaloJets -- L1Jet12", 500, 0, 500 );
   ptCalL16  =  fs->make<TH1F>( "ptCalL16",  "p_{T} of leading CaloJets -- L1Jet16", 500, 0, 500 );
   ptCalL36  =  fs->make<TH1F>( "ptCalL36",  "p_{T} of leading CaloJets -- L1Jet36", 500, 0, 500 );
   ptCalL52  =  fs->make<TH1F>( "ptCalL52",  "p_{T} of leading CaloJets -- L1Jet52", 500, 0, 500 );
@@ -46,7 +50,9 @@ void L1JetPlots::beginJob() {
   ptCalL92  =  fs->make<TH1F>( "ptCalL92",  "p_{T} of leading CaloJets -- L1Jet92", 500, 0, 500 );
   ptCalL128 =  fs->make<TH1F>( "ptCalL128",  "p_{T} of leading CaloJets -- L1Jet128", 500, 0, 500 );
 
-  ptPFL  =  fs->make<TH1F>( "ptPFL",  "p_{T} of leading PFJets -- L1Jet16", 500, 0, 500 );
+  ptPFL    =  fs->make<TH1F>( "ptPFL",    "p_{T} of leading PFJets", 500, 0, 500 );
+  ptPFL8   =  fs->make<TH1F>( "ptPFL8",   "p_{T} of leading PFJets -- L1Jet8", 500, 0, 500 );
+  ptPFL12  =  fs->make<TH1F>( "ptPFL12",  "p_{T} of leading PFJets -- L1Jet12", 500, 0, 500 );
   ptPFL16  =  fs->make<TH1F>( "ptPFL16",  "p_{T} of leading PFJets -- L1Jet16", 500, 0, 500 );
   ptPFL36  =  fs->make<TH1F>( "ptPFL36",  "p_{T} of leading PFJets -- L1Jet36", 500, 0, 500 );
   ptPFL52  =  fs->make<TH1F>( "ptPFL52",  "p_{T} of leading PFJets -- L1Jet52", 500, 0, 500 );
@@ -65,7 +71,7 @@ void L1JetPlots::beginJob() {
   hname="L1JetCollSize"; htitle="L1 Jet Collection Size";
   m_HistNames[hname] = fs->make<TH1F>( hname , htitle  , 10, -0.5, 9.5 );
 
-  Int_t nptbins=40;
+  Int_t nptbins=200;
   Double_t ptmin=0,ptmax=200.;
   hname="L1JetPt_Cen"; htitle="L1 Jet p_{T} -- Central";
   m_HistNames[hname] = fs->make<TH1F>( hname , htitle  , nptbins, ptmin, ptmax );
@@ -308,24 +314,33 @@ void L1JetPlots::L1Analysis(const reco::CaloJetCollection& caloJets,
 
   if (doCaloJets && caloJets.size()>0){
     CaloJetCollection::const_iterator cal = caloJets.begin();
-    ptCalL->Fill( cal->pt() );
-    if (maxL1>=16.)ptCalL16->Fill( cal->pt() );
-    if (maxL1>=36.)ptCalL36->Fill( cal->pt() );
-    if (maxL1>=52.)ptCalL52->Fill( cal->pt() );
-    if (maxL1>=68.)ptCalL68->Fill( cal->pt() );
-    if (maxL1>=92.)ptCalL92->Fill( cal->pt() );
-    if (maxL1>=128.)ptCalL128->Fill( cal->pt() );
+
+    if (checkCaloJetID(cal)){
+      ptCalL->Fill( cal->pt() );
+      if (maxL1>=8. )ptCalL8 ->Fill( cal->pt() );
+      if (maxL1>=12.)ptCalL12->Fill( cal->pt() );
+      if (maxL1>=16.)ptCalL16->Fill( cal->pt() );
+      if (maxL1>=36.)ptCalL36->Fill( cal->pt() );
+      if (maxL1>=52.)ptCalL52->Fill( cal->pt() );
+      if (maxL1>=68.)ptCalL68->Fill( cal->pt() );
+      if (maxL1>=92.)ptCalL92->Fill( cal->pt() );
+      if (maxL1>=128.)ptCalL128->Fill( cal->pt() );
+    }
   }
 
   if (doPFJets && pfJets.size()>0){
     PFJetCollection::const_iterator pf = pfJets.begin();
-    ptPFL->Fill( pf->pt() );
-    if (maxL1>=16.)ptPFL16->Fill( pf->pt() );
-    if (maxL1>=36.)ptPFL36->Fill( pf->pt() );
-    if (maxL1>=52.)ptPFL52->Fill( pf->pt() );
-    if (maxL1>=68.)ptPFL68->Fill( pf->pt() );
-    if (maxL1>=92.)ptPFL92->Fill( pf->pt() );
-    if (maxL1>=128.)ptPFL128->Fill( pf->pt() );
+    if (checkPFJetID(pf)){
+      ptPFL->Fill( pf->pt() );
+      if (maxL1>=8. )ptPFL8 ->Fill( pf->pt() );
+      if (maxL1>=12.)ptPFL12->Fill( pf->pt() );
+      if (maxL1>=16.)ptPFL16->Fill( pf->pt() );
+      if (maxL1>=36.)ptPFL36->Fill( pf->pt() );
+      if (maxL1>=52.)ptPFL52->Fill( pf->pt() );
+      if (maxL1>=68.)ptPFL68->Fill( pf->pt() );
+      if (maxL1>=92.)ptPFL92->Fill( pf->pt() );
+      if (maxL1>=128.)ptPFL128->Fill( pf->pt() );
+    }
   }
 }
 
@@ -375,6 +390,8 @@ template <typename T> void L1JetPlots::mtchL1(const Double_t& eta_l1,
 
 void L1JetPlots::endJob() {
 
+  cout << "Number of L1 SingleJet with pT>8: " << nL1Jet8 << endl;
+  cout << "Number of L1 SingleJet with pT>12: " << nL1Jet12 << endl;
   cout << "Number of L1 SingleJet with pT>16: " << nL1Jet16 << endl;
   cout << "Number of L1 SingleJet with pT>36: " << nL1Jet36 << endl;
   cout << "Number of L1 SingleJet with pT>52: " << nL1Jet52 << endl;
@@ -402,6 +419,49 @@ void L1JetPlots::fill2DHist(const TString& histName, const Double_t& x,const Dou
     std::cout << "%fillHist -- Could not find histogram with name: " << histName << std::endl;
   else
     hid2D->second->Fill(x,y,wt); 
+
+}
+ 
+bool L1JetPlots::checkPFJetID(const std::vector<reco::PFJet>::const_iterator jet){
+
+  // loose id for PFJets
+
+  bool jid=false;
+
+  double chf   = jet->chargedHadronEnergyFraction();
+  double nhf   = (jet->neutralHadronEnergy() + jet->HFHadronEnergy())/jet->energy();
+  double phf   = jet->photonEnergyFraction();
+  double elf   = jet->electronEnergyFraction();
+  double chm   = jet->chargedHadronMultiplicity();
+  //int nhm   = jet->neutralHadronMultiplicity();
+  //int phm   = jet->photonMultiplicity();
+  //int elm   = jet->electronMultiplicity();
+  int npr   = jet->chargedMultiplicity() + jet->neutralMultiplicity();
+
+  jid  = (npr>1 && phf<0.99 && nhf<0.99 && ((fabs(jet->eta())<=2.4 && elf<0.99 && chf>0 && chm>0) || fabs(jet->eta())>2.4)) ;
+
+  return jid;
+
+}
+
+bool L1JetPlots::checkCaloJetID(const std::vector<reco::CaloJet>::const_iterator i_calojet){
+
+  // loose id for CaloJets
+
+  bool jid=false;
+
+  double emf    = i_calojet->emEnergyFraction();
+  // int n90hits   = int((*calojetID)[calojetRef].n90Hits);
+  // double fHPD   = (*calojetID)[calojetRef].fHPD;
+  // double fRBX   = (*calojetID)[calojetRef].fRBX;
+  // int nTrkVtx   = JetExtendedAssociation::tracksAtVertexNumber(*calojetExtender,*i_calojet);
+  // int nTrkCalo  = JetExtendedAssociation::tracksAtCaloNumber(*calojetExtender,*i_calojet);		   
+  // bool looseID  = ((emf>0.01 || fabs(i_calojet->eta())>2.6) && (n90hits>1) && (fHPD<0.98));
+  // bool tightID  = ((emf>0.01 || fabs(i_calojet->eta())>2.6) && (n90hits>1) && ((fHPD<0.98 && i_calojet->pt()<=25) || (fHPD<0.95 && i_calojet->pt()>25)));
+  
+  jid=emf>0.01;
+
+  return jid;
 
 }
 

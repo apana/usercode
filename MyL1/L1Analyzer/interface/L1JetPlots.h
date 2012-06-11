@@ -65,6 +65,9 @@ private:
 		   const l1extra::L1JetParticleCollection&
 		   );
 
+  bool checkPFJetID(const std::vector<reco::PFJet>::const_iterator);
+  bool checkCaloJetID(const std::vector<reco::CaloJet>::const_iterator);
+
   edm::Service<TFileService> fs;
 
   template <typename T> void mtchL1(const Double_t&, const Double_t&, const Double_t&, 
@@ -81,8 +84,8 @@ private:
   bool doL1Jets;
 
   TH1F *ptCal, *etaCal, *phiCal;
-  TH1F *ptCalL, *ptCalL16,*ptCalL36,*ptCalL52,*ptCalL68,*ptCalL92,*ptCalL128;
-  TH1F *ptPFL, *ptPFL16,*ptPFL36,*ptPFL52,*ptPFL68,*ptPFL92,*ptPFL128;
+  TH1F *ptCalL,*ptCalL8,*ptCalL12,*ptCalL16,*ptCalL36,*ptCalL52,*ptCalL68,*ptCalL92,*ptCalL128;
+  TH1F *ptPFL, *ptPFL8, *ptPFL12, *ptPFL16, *ptPFL36, *ptPFL52, *ptPFL68,*ptPFL92,*ptPFL128;
 
   TH1F *ptGen, *etaGen, *phiGen;
 
@@ -95,7 +98,7 @@ private:
   std::map<TString, TH2*> m_HistNames2D;
   std::map<TString, TH2*>::iterator hid2D;
 
-  int nL1Jet16,nL1Jet36,nL1Jet52,nL1Jet68,nL1Jet92,nL1Jet128;
+  int nL1Jet8,nL1Jet12,nL1Jet16,nL1Jet36,nL1Jet52,nL1Jet68,nL1Jet92,nL1Jet128;
   int nL1TauJet20;
 
 };
