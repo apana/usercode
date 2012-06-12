@@ -18,6 +18,8 @@
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Common/interface/TriggerNames.h"
 
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
@@ -58,6 +60,7 @@ private:
 
   edm::InputTag HLTriggerResults,PFJetCollection1_,PFJetCollection2_, GenJetCollection_;
   std::string MyTrigger;
+  bool Debug_;
 
   TH1F *h_TriggerResults;
 
