@@ -17,6 +17,7 @@ CompJets::CompJets( const ParameterSet & cfg ) :
   PFJetCollection2_( cfg.getParameter<InputTag>( "PFJetCollection2" ) ),
   GenJetCollection_( cfg.getParameter<InputTag>( "GenJetCollection" ) ),
   MyTrigger( cfg.getParameter<string>( "MyTrigger" ) ),
+  Debug_( cfg.getParameter<bool>( "Debug" ) ),
   HLTinit_(false)
   {
 
@@ -144,11 +145,23 @@ void CompJets::analyze( const Event& evt, const EventSetup& es ) {
       for( GenJetCollection::const_iterator gjet = genJets->begin(); gjet != genJets->end(); ++ gjet ) {
       //find the best matched jet
 
+	bool printMess=false;
+
 	double genpt =gjet->pt();
 	double geneta=gjet->eta();
 	double genphi=gjet->phi();
 
 	double drmin1=99.,drmin2=99.;
+
+	if (Debug_){
+	  if (genpt>30 && genpt<40 && fabs(geneta)>3.) printMess=true;
+	}
+
+	if (printMess){
+	  cout << "\n\nXXX Run: " << evt.id().run() << " Event: " << evt.id().event() << "\n\n";
+	  cout << "Gen Jet: pt="<<genpt<<", eta="<<geneta<<", phi="<<genphi << "\n\n";
+	}
+
 	PFJetCollection::const_iterator miter1,miter2;
 	for( PFJetCollection::const_iterator jet1 = Jets1->begin(); jet1 != Jets1->end(); ++ jet1 ) {
 	  double dr=deltaR(geneta,genphi,jet1->eta(),jet1->phi());
@@ -166,6 +179,62 @@ void CompJets::analyze( const Event& evt, const EventSetup& es ) {
 	  }	  
 	}
 	//fill histograms
+
+
+	if (printMess){
+	  if (drmin1<drMatch()){
+	    cout << "XXX Matched jet in jetcoll 1 " << endl << miter1->print() << endl;
+	  }else{
+	    cout << "XXX No matching jet in jetcoll 1"  << endl;
+	  }
+	  if (drmin2<drMatch()){
+	    // cout << "XXX Matched jet in jetcoll 2 " << endl << miter2->print() << endl;
+	    cout << "XXX Matched jet in jetcoll 2 " << endl;
+	    cout << "Jet p/px/py/pz/pt: " << miter2->p() << '/' << miter2->px () << '/' << miter2->py() << '/' << miter2->pz() << '/' << miter2->pt() << std::endl
+		 << "    eta/phi: " << miter2->eta () << '/' << miter2->phi () << std::endl
+		 << "    # of constituents: " << miter2->nConstituents () << std::endl;
+	    cout << "    Constituents:" << std::endl;
+	    std::vector <PFCandidatePtr> constituents = miter2->getPFConstituents ();
+	    for (unsigned i = 0; i < constituents.size (); ++i) {
+	      if (constituents[i].get()) {
+		cout << "      #" << i << " " << *(constituents[i]) << std::endl;
+		cout << "XXXXXXXXXXXXXXXXXXXXX" <<endl;
+	      }
+	      else {
+		cout << "      #" << i << " PFCandidate is not available in the event"  << std::endl;
+	      }
+	    }
+
+	    
+	    cout << "    PFJet specific:" << std::endl
+		 << "      charged hadron energy/multiplicity: " << miter2->chargedHadronEnergy () << '/' << miter2->chargedHadronMultiplicity () << std::endl
+		 << "      neutral hadron energy/multiplicity: " << miter2->neutralHadronEnergy () << '/' << miter2->neutralHadronMultiplicity () << std::endl
+		 << "      photon energy/multiplicity: " << miter2->photonEnergy () << '/' << miter2->photonMultiplicity () << std::endl
+		 << "      electron energy/multiplicity: " << miter2->electronEnergy () << '/' << miter2->electronMultiplicity () << std::endl
+		 << "      muon energy/multiplicity: " << miter2->muonEnergy () << '/' << miter2->muonMultiplicity () << std::endl
+		 << "      HF Hadron energy/multiplicity: " << miter2->HFHadronEnergy () << '/' << miter2->HFHadronMultiplicity () << std::endl
+		 << "      HF EM particle energy/multiplicity: " << miter2->HFEMEnergy () << '/' << miter2->HFEMMultiplicity () << std::endl
+		 << "      charged/neutral hadrons energy: " << miter2->chargedHadronEnergy () << '/' << miter2->neutralHadronEnergy () << std::endl
+		 << "      charged/neutral em energy: " << miter2->chargedEmEnergy () << '/' << miter2->neutralEmEnergy () << std::endl
+		 << "      charged muon energy: " << miter2->chargedMuEnergy () << '/' << std::endl
+		 << "      charged/neutral multiplicity: " << miter2->chargedMultiplicity () << '/' << miter2->neutralMultiplicity () << std::endl;
+
+	    cout<<"\nPFJet "
+		<<"(pt, eta, phi) = "<<miter2->pt()<<","<<miter2->eta()<<","<<miter2->phi()
+		<<"  (Rch,Rnh,Rgamma,Re,Rmu,RHFHad,RHFEM) = "
+		<<miter2->chargedHadronEnergyFraction()<<","
+		<<miter2->neutralHadronEnergyFraction()<<","
+		<<miter2->photonEnergyFraction()<<","
+		<<miter2->electronEnergyFraction()<<","
+		<<miter2->muonEnergyFraction()<<","
+		<<miter2->HFHadronEnergyFraction()<<","
+		<<miter2->HFEMEnergyFraction() << endl;
+
+
+	  }else{
+	    cout << "XXX No matching jet in jetcoll 2"  << endl;
+	  }
+	}
 
 	fill2DHist("GenReco1_drMinVSpT",genpt,drmin1,1.);
 	fill2DHist("GenReco2_drMinVSpT",genpt,drmin2,1.);
@@ -385,14 +454,14 @@ void CompJets::bookHistograms() {
   m_HistNames3D[hname]=Book3dHist(hname, htitle, 100, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
 
   hname="Reco1overReco2_vsReco1"; htitle="p_{T} (coll1) / p_{T} (coll2) vs jet collection 1 pt,eta";  // pt, eta, resp
-  m_HistNames3D[hname]=Book3dHist(hname, htitle, 100, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
+  m_HistNames3D[hname]=Book3dHist(hname, htitle, 200, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
   hname="Reco1overReco2_vsReco2"; htitle="p_{T} (coll1) / p_{T} (coll2) vs jet collection 2 pt,eta";
-  m_HistNames3D[hname]=Book3dHist(hname, htitle, 100, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
+  m_HistNames3D[hname]=Book3dHist(hname, htitle, 200, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
 
   hname="GenReco1_jetResp3D"; htitle="Jet response Coll1/Gen pt,eta";
-  m_HistNames3D[hname]=Book3dHist(hname, htitle, 100, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
+  m_HistNames3D[hname]=Book3dHist(hname, htitle, 200, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
   hname="GenReco2_jetResp3D"; htitle="Jet response Coll2/Gen pt,eta";
-  m_HistNames3D[hname]=Book3dHist(hname, htitle, 100, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
+  m_HistNames3D[hname]=Book3dHist(hname, htitle, 200, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
 
 
   hname="jetResp_pt30_40_eta1"; htitle="jetResp |#eta|<1.1  30 < p_{T} <40";
