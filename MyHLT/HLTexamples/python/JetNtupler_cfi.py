@@ -1,0 +1,10 @@
+import FWCore.ParameterSet.Config as cms
+
+jetNtupler = cms.EDAnalyzer("JetNtupler",
+                       HLTriggerResults = cms.InputTag("TriggerResults::HLT"),
+                       RecoJets = cms.InputTag("ak5PFJetsL1FastL2L3"),
+                       HLTJets  = cms.InputTag("hltAK5PFJetL1FastL2L3Corrected"),
+                       GenJets  = cms.InputTag("ak5GenJets"),
+                       Debug=cms.bool(False),
+                       Monte=cms.bool(False)
+                       )
