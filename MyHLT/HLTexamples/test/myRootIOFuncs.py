@@ -1,4 +1,4 @@
-from ROOT import TF1, TFile, TH1F, TTree, TChain, SetOwnership
+from ROOT import TF1, TFile, TH1F, TH3F, TTree, TChain, SetOwnership
 
 def getRootChain(infiles,treeName):
 
@@ -19,6 +19,11 @@ def getRootChain(infiles,treeName):
 
 def Book1D(cname,ctitle,nbins,xmin,xmax,doSumw2=True):
     h=TH1F(cname,ctitle,nbins,xmin,xmax)
+    if doSumw2: h.Sumw2()
+    return h
+
+def Book3D(cname,ctitle,nbinsx,xmin,xmax,nbinsy,ymin,ymax,nbinsz,zmin,zmax,doSumw2=True):
+    h=TH3F(cname,ctitle,nbinsx,xmin,xmax,nbinsy,ymin,ymax,nbinsz,zmin,zmax)
     if doSumw2: h.Sumw2()
     return h
 
