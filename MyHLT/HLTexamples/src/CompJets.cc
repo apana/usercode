@@ -25,7 +25,6 @@ CompJets::CompJets( const ParameterSet & cfg ) :
 }
 
 void CompJets::beginJob() {
-
   bookHistograms();
 
 }
@@ -35,6 +34,8 @@ void CompJets::analyze( const Event& evt, const EventSetup& es ) {
   bool gotHLT=true;
   bool myTrig=false;
   string errMsg("");
+
+  if (Debug_) cout << "Beginning CompJets" << endl;
 
   Handle<TriggerResults> hltresults,hltresultsDummy;
   evt.getByLabel(HLTriggerResults,hltresults);
@@ -79,6 +80,12 @@ void CompJets::analyze( const Event& evt, const EventSetup& es ) {
   if (Jets1.isValid()) plotJetPtandEta(*Jets1,"coll1");
   if (Jets2.isValid()) plotJetPtandEta(*Jets2,"coll2");
 
+  if (Debug_){
+    if (Jets1.isValid())
+      std::cout << "Jets1 size: " << Jets1->size() << std::endl;
+    if (Jets2.isValid())
+      std::cout << "Jets2 size: " << Jets2->size() << std::endl;
+  }
 
   if (Jets1.isValid() && Jets2.isValid() ) { 
     //Loop over the PFJets and fill some histograms
