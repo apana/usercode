@@ -12,6 +12,8 @@ from myRootIOFuncs import *
 ######################################
 
 
+## max dist for jet matching
+drMatch=0.25
 
 ## Define mass histogram binning here
 nmbins=60
@@ -51,11 +53,14 @@ def getJobopt(self):
     self.nevts         = Cfg.getint("InputOutput", "nevts")
     self.outFile       = Cfg.get("InputOutput", "outFile")
     self.inputFiles    = Cfg.get("InputOutput", "inputFiles")
-    self.WhichTree      =Cfg.get("InputOutput", "WhichTree")
+    self.WhichTree     =Cfg.get("InputOutput", "WhichTree")
+    self.WhichTrigger  =Cfg.get("InputOutput", "WhichTrigger")
     self.isData        = Cfg.getboolean("InputOutput", "isData")
 
 ###
     self.MaxEta     = Cfg.getfloat("Analysis", "MaxEta")
+    self.rhoMin     = Cfg.getfloat("Analysis", "rhoMin")
+    self.rhoMax     = Cfg.getfloat("Analysis", "rhoMax")
 ### 
 
 def BookHistograms():
@@ -72,9 +77,39 @@ def BookHistograms():
     hTitle="Number of HLTJets" 
     hists[hName] = Book1D(hName,hTitle,60,-0.5,59.5)
 
-    n=500
+    hName="nvrt"
+    hTitle="Number of Primary Vertices" 
+    hists[hName] = Book1D(hName,hTitle,40,-0.5,39.5)
+
+    hName="rho"
+    hTitle="Event rho" 
+    hists[hName] = Book1D(hName,hTitle,100,0,50.)
+
+    hname="drMin"; htitle="Min dr between jets";
+    hists[hname] = Book1D(hname, htitle, 100, 0., 1.); 
+
+    hname="drMin_pt40"; htitle="Min dr between jets -- p_{T} > 40 GeV";
+    hists[hname] = Book1D(hname, htitle, 100, 0., 1.); 
+
+
+    njr=20
+    jrmin=0.
+    jrmax=2.
+
+    neta=20
+    etamin=-5.
+    etamax=5.
+
+    hname="HLToverReco_vsReco"; htitle="p_{T} (coll2) / p_{T} (coll1) vs jet collection 1 pt,eta";  
+    hists[hname]=Book3D(hname, htitle, 100, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
+    hname="RecooverHLT_vsReco"; htitle="p_{T} (coll2) / p_{T} (coll1) vs jet collection 2 pt,eta";
+    hists[hname]=Book3D(hname, htitle, 100, 0. ,1000., neta, etamin, etamax, njr, jrmin, jrmax);
+
+
+
+    n=600
     minx=0.
-    maxx=500.
+    maxx=600.
 
     hName="ptHLTJets"
     hTitle="HLT Jet p_{T}" 
@@ -197,7 +232,7 @@ def deltaR(eta1,phi1,eta2,phi2):
                       
     return math.sqrt(deta*deta + dphi*dphi)
 
-def processEvent():
+def processEvent(ievt):
 
     wt=1.
     h["Counter"].Fill(0.)  # count the numbers processed
@@ -206,6 +241,32 @@ def processEvent():
 
     h["nHLT"].Fill(tree.nhJets,wt)
     # print nPVs
+    h["nvrt"].Fill(tree.NVrtx,wt)
+
+    if (tree.rho<jobpar.rhoMin):return
+    if (tree.rho>jobpar.rhoMax):return
+
+    h["rho"].Fill(tree.rho,wt)
+
+    if ievt==0:
+        print "Number of trigger bits: ",tree.ntrig,ievt
+        # hName="triggerResults"
+        # hTitle="HLT Results" 
+        # h[hName] = Book1D(hName,hTitle,tree.ntrig,0,tree.ntrig,False)
+
+        for key in trigDict.keys():
+            # print key,trigDict.get(key)
+            h[hName].GetXaxis().SetBinLabel(trigDict.get(key)+1,key);
+
+    for i in xrange( tree.ntrig ):
+        if tree.triggerBits[i]==1: h["triggerResults"].Fill(float(i))
+
+    
+    ##  Require trigger to fire ##
+    itrig=trigDict.get(jobpar.WhichTrigger)
+    yesTrig=tree.triggerBits[itrig]
+    if yesTrig==0: return
+    h["Counter"].Fill(1.)  # count the numbers passing the trigger
 
     ptHLTL=0.
     for i in xrange( tree.nhJets ):
@@ -226,6 +287,29 @@ def processEvent():
         if (math.fabs(tree.rJet_eta[i])<jobpar.MaxEta)  and goodID:
                 if tree.rJet_pt[i]>ptRecoL: ptRecoL=tree.rJet_pt[i]
 
+        if goodID:
+            ptr=tree.rJet_pt[i]
+            etar=tree.rJet_eta[i]
+            phir=tree.rJet_phi[i]
+            #find the best matched jet
+            drmin=99.;
+            match_h=-1;
+            for j in xrange( tree.nhJets ):
+                etah=tree.hJet_eta[j]
+                phih=tree.hJet_phi[j]
+                dr=deltaR(etar,phir,etah,phih);                
+                if dr<drmin:
+                    drmin=dr;
+                    match_h=j;
+            h["drMin"].Fill(drmin)
+            if ptr>40: h["drMin_pt40"].Fill(drmin)
+            # plot the response for matched jets
+            if drmin<drMatch:
+                pth=tree.hJet_pt[match_h]
+                h["HLToverReco_vsReco"].Fill(ptr,etar,pth/ptr,1.)
+                h["RecooverHLT_vsReco"].Fill(ptr,etar,ptr/pth,1.)
+
+    ## done with double loop
     if ptRecoL>0:
         h["ptRecoL"].Fill(ptRecoL)
         if (ptHLTL>25.): h["ptRecoL_HLT25"].Fill(ptRecoL)
@@ -298,11 +382,31 @@ if __name__ == "__main__":
     outf=OutputRootFile(jobpar.outFile)
 
     h=BookHistograms()
+    hName="triggerResults"
+    hTitle="HLT Results" 
+    h[hName] = Book1D(hName,hTitle,500,0,500,False)
 
     tree=getRootChain(jobpar.inputFiles,jobpar.WhichTree)
+    f= TFile(jobpar.inputFiles)
+
+    histname=jobpar.WhichTree[:jobpar.WhichTree.find("/")] +"/" + "TriggerResults"
+    print "Trigger names taken from:",histname
+    triggerHist=f.Get(histname)
+    # print triggerHist,triggerHist.GetEntries()
+    # print triggerHist.GetXaxis().GetNbins()
+    trigDict={}
+
+    for itrig in xrange( triggerHist.GetXaxis().GetNbins() ):
+        # print "\t",triggerHist.GetXaxis().GetBinLabel(itrig+1)
+        trigDict[triggerHist.GetXaxis().GetBinLabel(itrig+1)]=itrig
+
+    if not trigDict.has_key(jobpar.WhichTrigger):
+        print "\n\tRequested trigger name not found -- EXITING"
+        sys.exit(1)
+
 
     leaves = tree.GetListOfBranches();
-    printLeaves(leaves)
+    # printLeaves(leaves)
 
     EVENT  = ROOT.EventInfo()
     tree.SetBranchAddress("EVENT", AddressOf(EVENT, "run") );
@@ -324,7 +428,7 @@ if __name__ == "__main__":
         decade = k  
 
         tree.GetEntry(jentry) 
-        processEvent()  ### work is done here
+        processEvent(jentry)  ### work is done here
 
 
     outf.Write();
