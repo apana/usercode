@@ -29,11 +29,18 @@
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 
+#include "DataFormats/VertexReco/interface/Vertex.h" 
+#include "DataFormats/VertexReco/interface/VertexFwd.h" 
+
 #include "DataFormats/Math/interface/deltaR.h"
 
 class TFile;
 
 #define MAXJ 130
+#define MAXTRIG 500
+// #define MAXVRT 50
+
+static const size_t MAXVRT = 50;
 
 typedef struct 
 {
@@ -113,7 +120,7 @@ private:
 
   edm::Service<TFileService> fs;
 
-  edm::InputTag HLTriggerResults,HLTJets_,RecoJets_, GenJets_;
+  edm::InputTag HLTriggerResults,HLTJets_,RecoJets_, GenJets_, Rho_, Vertices_;
   bool Debug_,Monte_;
 
   TH1F *h_TriggerResults;
@@ -128,13 +135,23 @@ private:
   int errCnt;
   bool HLTinit_;
 
-  int nhJets,nrJets;
+  int nhJets,nrJets,ntrig;
 
+  
   //Tree Variables
   TTree *HltJets;
   
   EventInfo EVENT;
   JetInfo hJets, rJets;
+
+  int *triggerBits;
+  float rho;
+
+  int   NVrtx;
+  float *VertexCand_x, *VertexCand_y, *VertexCand_z;
+  int   *VertexCand_tracks;
+  float *VertexCand_chi2;
+  float *VertexCand_ndof;
 
   const int errMax(){return 20;}
 
