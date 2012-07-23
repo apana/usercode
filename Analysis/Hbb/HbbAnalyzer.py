@@ -151,15 +151,15 @@ class BDT_READER_BST:
         self.bdt_fjpt2[0]=-999.
         self.bdt_fjpt3[0]=-999.
 
-        if len(tree.fathFilterJets_csv)>0:
+        if tree.nfathFilterJets>0:
             self.bdt_csv1[0]=tree.fathFilterJets_csv[0]
             self.bdt_fjpt1[0]=tree.fathFilterJets_pt[0]
 
-        if len(tree.fathFilterJets_csv)>1:
+        if tree.nfathFilterJets>1:
             self.bdt_csv2[0]=tree.fathFilterJets_csv[1]
             self.bdt_fjpt2[0]=tree.fathFilterJets_pt[1]
 
-        if len(tree.fathFilterJets_csv)>2:
+        if tree.nfathFilterJets>2:
             self.bdt_csv3[0]=tree.fathFilterJets_csv[2]
             self.bdt_fjpt3[0]=tree.fathFilterJets_pt[2]
 
@@ -1100,7 +1100,7 @@ def ZllComparisonPlots(wt=1.):
             dPhi=math.fabs(deltaPhi(FatH.phi,V.phi))
             Hpt=FatH.filteredpt
             Hmass=FatH.filteredmass
-            if (FatH.FatHiggsFlag > 0):
+            if (FatH.FatHiggsFlag > 0 and tree.nfathFilterJets >= 2):
                 bdt=reader_bst.evaluate()
         else:
             print "Undefined Control Region"
