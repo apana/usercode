@@ -139,12 +139,15 @@ class BDT_READER_BST:
         self.bdt_Hmass[0]=FatH.filteredmass
         self.bdt_Hpt[0]=FatH.filteredpt
         self.bdt_Vpt[0]=V.pt
+        self.bdt_HVdPhi[0]=math.fabs(deltaPhi(FatH.filteredphi,V.phi))
+
         self.bdt_csv1[0]=tree.fathFilterJets_csv[0]
         self.bdt_csv2[0]=tree.fathFilterJets_csv[1]
         self.bdt_csv3[0]=tree.fathFilterJets_csv[2]
-        self.bdt_HVdPhi[0]=math.fabs(deltaPhi(FatH.phi,V.phi))
-        ## ccla 
-        self.bdt_dEta[0]=tree.dEta
+
+        self.bdt_pt1[0]=tree.fathFilterJets_pt[0]
+        self.bdt_pt2[0]=tree.fathFilterJets_pt[1]
+        self.bdt_pt3[0]=tree.fathFilterJets_pt[2]
 
     def evaluate(self):
         bdt=self.reader.EvaluateMVA("BDT")
@@ -264,6 +267,8 @@ def getJobopt(self):
 
 ### 
     self.MinHVdphi  = Cfg.getfloat("Common", "MinHVdphi")
+    self.MinMETJdPhi= Cfg.getfloat("Common", "MinMETJdPhi")
+
     self.MaxJetEta  = Cfg.getfloat("Common", "MaxJetEta")
     self.MaxAjets   = Cfg.getint("Common", "MaxAjets")
     self.PUWeight   = Cfg.getboolean("Common", "PUWeight")
@@ -326,6 +331,9 @@ def BookHistograms():
     hTitle="Delta #phi FatJ and V" 
     hists[hName] = Book1D(hName,hTitle,16,0.,math.pi)
 
+    hName="HMETJdPhi"
+    hTitle="Delta #phi FatJ and MET" 
+    hists[hName] = Book1D(hName,hTitle,16,0.,math.pi)
 
     hName="Hmass"
     hTitle="bb Mass" 
@@ -378,6 +386,10 @@ def Book_AK5Hists(hists):
 
     hName="HVdPhi_AK5_alt"
     hTitle="Delta #phi H(bb) cand and V -- alt calc." 
+    hists[hName] = Book1D(hName,hTitle,16,0.,math.pi)
+
+    hName="HMETJdPhi_AK5_alt"
+    hTitle="Delta #phi H(bb) cand and MET -- alt calc." 
     hists[hName] = Book1D(hName,hTitle,16,0.,math.pi)
 
     hName="Hmass_AK5"
@@ -1053,9 +1065,9 @@ def ZllComparisonPlots(wt=1.):
 
     # print bdt_Hmass[0], bdt_Hpt[0], bdt_Vpt[0]
     # bdt=reader.EvaluateMVA("BDT")
-    bdt=reader_ak5.evaluate()
 
-    print "BDT: ",bdt,reader_ak5.bdt_Hmass[0], reader_ak5.bdt_Hpt[0], reader_ak5.bdt_Vpt[0]
+
+    # print "BDT: ",bdt,reader_ak5.bdt_Hmass[0], reader_ak5.bdt_Hpt[0], reader_ak5.bdt_Vpt[0]
 
     for Analysis in ["AK5", "Subjet"]:
 
@@ -1064,11 +1076,13 @@ def ZllComparisonPlots(wt=1.):
             dPhi=tree.HVdPhi
             Hpt=H.pt
             Hmass=H.mass
+            bdt=reader_ak5.evaluate()
         elif Analysis == 'Subjet':
             naJets=findNAK5Jets(FatH.eta,FatH.phi,jobpar.Min_aJetpt_BST)
             dPhi=math.fabs(deltaPhi(FatH.phi,V.phi))
             Hpt=FatH.filteredpt
             Hmass=FatH.filteredmass
+            bdt=reader_bst.evaluate()
         else:
             print "Undefined Control Region"
             sys.exit(1)
@@ -1530,6 +1544,8 @@ if __name__ == "__main__":
 
     # setup BDT
     reader_ak5 = BDT_READER_AK5(jobpar.BDT_Weights_AK5)
+    reader_bst = BDT_READER_BST(jobpar.BDT_Weights_BST)
+
     ## reader = TMVA.Reader("Color:!Silent");
     ## 
     ## bdt_Hmass = array( 'f', [ 0 ] )
