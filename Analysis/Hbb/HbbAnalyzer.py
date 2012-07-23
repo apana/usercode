@@ -141,13 +141,27 @@ class BDT_READER_BST:
         self.bdt_Vpt[0]=V.pt
         self.bdt_HVdPhi[0]=math.fabs(deltaPhi(FatH.filteredphi,V.phi))
 
-        self.bdt_csv1[0]=tree.fathFilterJets_csv[0]
-        self.bdt_csv2[0]=tree.fathFilterJets_csv[1]
-        self.bdt_csv3[0]=tree.fathFilterJets_csv[2]
+        # print len(tree.fathFilterJets_csv), FatH.FatHiggsFlag
+        
+        self.bdt_csv1[0]=-999.
+        self.bdt_csv2[0]=-999.
+        self.bdt_csv3[0]=-999.
 
-        self.bdt_pt1[0]=tree.fathFilterJets_pt[0]
-        self.bdt_pt2[0]=tree.fathFilterJets_pt[1]
-        self.bdt_pt3[0]=tree.fathFilterJets_pt[2]
+        self.bdt_fjpt1[0]=-999.
+        self.bdt_fjpt2[0]=-999.
+        self.bdt_fjpt3[0]=-999.
+
+        if len(tree.fathFilterJets_csv)>0:
+            self.bdt_csv1[0]=tree.fathFilterJets_csv[0]
+            self.bdt_fjpt1[0]=tree.fathFilterJets_pt[0]
+
+        if len(tree.fathFilterJets_csv)>1:
+            self.bdt_csv2[0]=tree.fathFilterJets_csv[1]
+            self.bdt_fjpt2[0]=tree.fathFilterJets_pt[1]
+
+        if len(tree.fathFilterJets_csv)>2:
+            self.bdt_csv3[0]=tree.fathFilterJets_csv[2]
+            self.bdt_fjpt3[0]=tree.fathFilterJets_pt[2]
 
     def evaluate(self):
         bdt=self.reader.EvaluateMVA("BDT")
@@ -1071,18 +1085,23 @@ def ZllComparisonPlots(wt=1.):
 
     for Analysis in ["AK5", "Subjet"]:
 
+        bdt=-999.
         if Analysis == 'AK5':
             naJets=tree.naJets
             dPhi=tree.HVdPhi
             Hpt=H.pt
             Hmass=H.mass
-            bdt=reader_ak5.evaluate()
+            if (H.HiggsFlag > 0):
+                bdt=reader_ak5.evaluate()
+
         elif Analysis == 'Subjet':
+               
             naJets=findNAK5Jets(FatH.eta,FatH.phi,jobpar.Min_aJetpt_BST)
             dPhi=math.fabs(deltaPhi(FatH.phi,V.phi))
             Hpt=FatH.filteredpt
             Hmass=FatH.filteredmass
-            bdt=reader_bst.evaluate()
+            if (FatH.FatHiggsFlag > 0):
+                bdt=reader_bst.evaluate()
         else:
             print "Undefined Control Region"
             sys.exit(1)
@@ -1377,15 +1396,10 @@ def processEvent():
     h["Counter"].Fill(2.)
 
 
-    # ccla
+    # load the BDT
     reader_ak5.loadVar()
-    ## bdt_Hmass[0]=H.mass
-    ## bdt_Hpt[0]=H.pt
-    ## bdt_Vpt[0]=V.pt
-    ## bdt_csv0[0]=tree.hJet_csv[0]
-    ## bdt_csv1[0]=tree.hJet_csv[1]
-    ## bdt_HVdPhi[0]=tree.HVdPhi
-    ## bdt_dEta[0]=tree.dEta
+    reader_bst.loadVar()
+
     
     fill_ZHists()
     if InZMassWindow(): h["Counter"].Fill(3.)

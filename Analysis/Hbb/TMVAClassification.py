@@ -235,7 +235,7 @@ def main():
     elif _analysis == "Subjet":
         cutString=\
             "Vtype == 1"             + " && " +\
-            "H.FatHiggsFlag > 0"     + " && " +\
+            "FatH.FatHiggsFlag > 0"  + " && " +\
             "V.mass > 75.0"          + " && " +\
             "V.mass < 105.0"         + " && " +\
             "V.pt > 100.0"           + " && " +\
