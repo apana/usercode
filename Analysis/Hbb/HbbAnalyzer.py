@@ -11,14 +11,6 @@ from ROOT import *
 gSystem.Load("libFWCoreFWLite.so")
 AutoLibraryLoader.enable()
 
-# import ROOT
-# from ROOT import TLorentzVector
-# from ROOT import gDirectory, gROOT, gFile, AddressOf
-
-
-# from ROOT import AutoLibraryLoader
-
-
 from myRootIOFuncs import *
 
 
@@ -187,16 +179,6 @@ def getJobopt(self):
     parser.add_option("--hh", action="store_true", dest="help",default=False,
                       help="print help")
 
-    ## parser.add_option("-c", "--cfg", dest="cfgfile",
-    ##                   help="job configuration file", metavar="FILE")
-    ## parser.add_option("-i", "--infile", dest="inputFile",type="string",
-    ##                   help="input files to process", metavar="INFILE")
-    ## parser.add_option("-o", "--outfile", dest="outputFile",type="string",
-    ##                   help="output histogram file", metavar="OUTFILE")
-    ## parser.add_option("-q", "--quiet",
-    ##                   action="store_false", dest="verbose", default=True,
-    ##                   help="don't print status messages to stdout")
-
     (options, args) = parser.parse_args()
 
     narg=len(args)
@@ -244,13 +226,7 @@ def getJobopt(self):
     Cfg.read(cfgFile)
 
 
-    # self.nevts         = Cfg.getint("InputOutput", "nevts")
-    # self.outFile       = Cfg.get("InputOutput", "outFile")
-    # self.inputFiles    = Cfg.get("InputOutput", "inputFiles")
-    # self.isData        = Cfg.getboolean("InputOutput", "isData")
-
     self.WhichAnalysis = Cfg.get("InputOutput", "WhichAnalysis")    
-    # self.MC7TeV        = Cfg.getboolean("InputOutput", "MC7TeV")
 
     self.ApplyJECResidual = Cfg.getboolean("SubjetAnalysis", "ApplyJECResidual")
 
@@ -265,9 +241,6 @@ def getJobopt(self):
 
     self.BDT_Weights_BST = Cfg.get("SubjetAnalysis", "BDT_Weights_BST")
 
-### BDT
-##    self.BDT_MinJetpT1  = Cfg.getfloat("BDT", "MinJetpT1")
-##    self.BDT_MinJetpT2  = Cfg.getfloat("BDT", "MinJetpT2")
 ###
     self.MinLLpTAK5     = Cfg.getfloat("DijetAnalysis", "MinLLpTAK5")
     self.MaxLLpTAK5     = Cfg.getfloat("DijetAnalysis", "MaxLLpTAK5")
@@ -323,6 +296,10 @@ def BookHistograms():
     hName="nFJ"
     hTitle="Number of FilterJets -- V_{pT} > V_{pt}^{cut}" 
     hists[hName] = Book1D(hName,hTitle,6,-0.5,5.5)
+    
+    hName="FatH_Pt"
+    hTitle="FatJet p_{T} -- V_{pT} > V_{pt}^{cut}" 
+    hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
 
     hName="ptFJ1"
     hTitle="FilterJet1 p_{T} -- V_{pT} > V_{pt}^{cut}" 
@@ -340,13 +317,37 @@ def BookHistograms():
     hTitle="Candidate type" 
     hists[hName] = Book1D(hName,hTitle,6,-0.5,5.5,False)
 
-    hName="HVdPhi"
-    hTitle="Delta #phi FatJ and V" 
-    hists[hName] = Book1D(hName,hTitle,16,0.,math.pi)
-
     hName="HMETJdPhi"
     hTitle="Delta #phi FatJ and MET" 
     hists[hName] = Book1D(hName,hTitle,16,0.,math.pi)
+    
+    hName="CSV1"
+    hTitle="CSV1 (from Boosted Analysis)" 
+    hists[hName] = Book1D(hName,hTitle,20,0.,1.)
+    
+    hName="CSV2"
+    hTitle="CSV2 (from Boosted Analysis)" 
+    hists[hName] = Book1D(hName,hTitle,20,0.,1.)
+
+    hName="HVdPhi"
+    hTitle="Delta #phi FatJ and V" 
+    hists[hName] = Book1D(hName,hTitle,320,0.,math.pi)
+    
+    hName="HfiltVdPhi"
+    hTitle="Delta #phi Fat.FilteredJets and V" 
+    hists[hName] = Book1D(hName,hTitle,320,0.,math.pi)
+    
+    hName="AK5dRCounter"
+    hTitle="Additional AK5 jets with dR to FilteredJ > x" 
+    hists[hName] = Book1D(hName,hTitle,20,0.05,2.05)
+    
+    hName="Naddjets"
+    hTitle="Additional AK5 jets away from FilteredJ" 
+    hists[hName] = Book1D(hName,hTitle,30,0.0,30)
+    
+    hName="NaddjetsFat"
+    hTitle="Additional AK5 jets away from FatJet" 
+    hists[hName] = Book1D(hName,hTitle,30,0.0,30)
 
     hName="Hmass"
     hTitle="bb Mass" 
@@ -418,6 +419,34 @@ def Book_AK5Hists(hists):
     hists[hName] = Book1D(hName,hTitle,204,-20.,1000.)
 
 
+    hName="Jet1Pt_AK5"
+    hTitle="Jet1 p_{T} (from AK5 jet Analysis)" 
+    hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+
+    hName="Jet2Pt_AK5"
+    hTitle="Jet2 p_{T} (from AK5 jet Analysis)" 
+    hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+
+    hName="Add_Jet1Pt_AK5"
+    hTitle="Additional Jet1 p_{T} (from AK5 jet Analysis)" 
+    hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+
+    hName="Add_Jet2Pt_AK5"
+    hTitle="Additional Jet2 p_{T} (from AK5 jet Analysis)" 
+    hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+    
+    hName="Naddjets_AK5"
+    hTitle="Additional AK5 jets" 
+    hists[hName] = Book1D(hName,hTitle,30,0.0,30)
+    
+    hName="CSV1_AK5"
+    hTitle="CSV1 (from AK5 jet Analysis)" 
+    hists[hName] = Book1D(hName,hTitle,20,0.,1.)
+    
+    hName="CSV2_AK5"
+    hTitle="CSV2 (from AK5 jet Analysis)" 
+    hists[hName] = Book1D(hName,hTitle,20,0.,1.)
+    
     hName="Hmass_AK5_alt"
     hTitle="bb Mass (from AK5 jet Analysis)" 
     hists[hName] = Book1D(hName,hTitle,nmbins, minmass, maxmass)
@@ -439,16 +468,16 @@ def Book_Comparisons(hists):
     outf.mkdir("Comparisons")
     outf.cd("Comparisons")
 
-    hName="LeadingElePt"
-    hTitle="Leading Electron Pt" 
+    hName="LeadingLepPt"
+    hTitle="Leading Lepton Pt" 
     hists[hName] = Book1D(hName,hTitle,500, 0., 500.)
 
-    hName="LeadingElePt_ZMass"
-    hTitle="Leading Electron Pt -- In Z Mass Window" 
+    hName="LeadingLepPt_ZMass"
+    hTitle="Leading Lepton Pt -- In Z Mass Window" 
     hists[hName] = Book1D(hName,hTitle,500, 0., 500.)
 
-    hName="LeadingEleEta"
-    hTitle="Leading Electron #eta" 
+    hName="LeadingLepEta"
+    hTitle="Leading Lepton #eta" 
     hists[hName] = Book1D(hName,hTitle,100, -5., 5.)
 
     hName="LeadingJetPt"
@@ -459,7 +488,7 @@ def Book_Comparisons(hists):
     hTitle="2nd Leading Jet Pt"
     hists[hName] = Book1D(hName,hTitle,1000, 0., 1000.)
 
-    hName="DR_jet_Zelec"
+    hName="DR_jet_Zlept"
     hTitle="Delta R between leading jet and Z leptons" 
     hists[hName] = Book1D(hName,hTitle,100, 0., 3.)
 
@@ -470,12 +499,12 @@ def Book_Comparisons(hists):
     for ControlRegion in ["V+udscg", "V+bb", "ttbar"]:
         for Analysis in ["AK5", "Subjet"]:
 
-            hName="Mee_" + Analysis + "Analysis_" + ControlRegion + "CR"
-            hTitle="e^{+}e^{-} Mass  -- " + Analysis + "Analysis_" + ControlRegion + "CR"
+            hName="Mll_" + Analysis + "Analysis_" + ControlRegion + "CR"
+            hTitle="l^{+}l^{-} Mass  -- " + Analysis + "Analysis_" + ControlRegion + "CR"
             hists[hName] = Book1D(hName,hTitle,300,0.,300.)
 
-            hName="Zee_pT_" + Analysis + "Analysis_" + ControlRegion + "CR"
-            hTitle="Z->e^{+}e^{-} p_{T} -- " + Analysis + "Analysis_" + ControlRegion + "CR"
+            hName="Zll_pT_" + Analysis + "Analysis_" + ControlRegion + "CR"
+            hTitle="Z->l^{+}l^{-} p_{T} -- " + Analysis + "Analysis_" + ControlRegion + "CR"
             hists[hName] = Book1D(hName,hTitle,500,0.,500.)
 
             hName="Hmass_" + Analysis + "Analysis_" + ControlRegion + "CR"
@@ -568,49 +597,38 @@ def Book_VHists(hists):
     hTitle="Transverse Mass" 
     hists[hName] = Book1D(hName,hTitle,200,0.,200.)
 
-    hName="Mmumu"
-    hTitle="#mu#mu Mass" 
-    hists[hName] = Book1D(hName,hTitle,150,0.,150.)
-
-    hName="Mee"
-    hTitle="e^{+}e^{-} Mass" 
-    hists[hName] = Book1D(hName,hTitle,150,0.,150.)
-
-    hName="Zmumu_pT"
-    hTitle="Z->#mu#mu p_{T}" 
+    hName="Zll_pT"
+    hTitle="Z->ll p_{T}" 
     hists[hName] = Book1D(hName,hTitle,500,0.,500.)
 
-    hName="Zee_pT"
-    hTitle="Z->e^{+}e^{-} p_{T}" 
-    hists[hName] = Book1D(hName,hTitle,500,0.,500.)
 
     hName="Wlnu_pT"
     hTitle="W->l#nu p_{T}" 
     hists[hName] = Book1D(hName,hTitle,1000,0.,1000.)
 
     if ( not jobpar.isData):
-        hName="Zee_pT_ptGen180"
-        hTitle="Z->e^{+}e^{-} p_{T} -- Gen Z p_{T} > 180 GeV" 
+        hName="Zll_pT_ptGen180"
+        hTitle="Z->l^{+}l^{-} p_{T} -- Gen Z p_{T} > 180 GeV" 
         hists[hName] = Book1D(hName,hTitle,500,0.,500.)
 
-        hName="Zee_pT_ptGen200"
-        hTitle="Z->e^{+}e^{-} p_{T} -- Gen Z p_{T} > 200 GeV" 
+        hName="Zll_pT_ptGen200"
+        hTitle="Z->l^{+}l^{-} p_{T} -- Gen Z p_{T} > 200 GeV" 
         hists[hName] = Book1D(hName,hTitle,500,0.,500.)
 
-        hName="Zee_pT_ptGen220"
-        hTitle="Z->e^{+}e^{-} p_{T} -- Gen Z p_{T} > 220 GeV" 
+        hName="Zll_pT_ptGen220"
+        hTitle="Z->l^{+}l^{-} p_{T} -- Gen Z p_{T} > 220 GeV" 
         hists[hName] = Book1D(hName,hTitle,500,0.,500.)
 
-        hName="Zee_pT_ptGen230"
-        hTitle="Z->e^{+}e^{-} p_{T} -- Gen Z p_{T} > 230 GeV" 
+        hName="Zll_pT_ptGen230"
+        hTitle="Z->l^{+}l^{-} p_{T} -- Gen Z p_{T} > 230 GeV" 
         hists[hName] = Book1D(hName,hTitle,500,0.,500.)
 
-        hName="Zee_pT_ptGen240"
-        hTitle="Z->e^{+}e^{-} p_{T} -- Gen Z p_{T} > 240 GeV" 
+        hName="Zll_pT_ptGen240"
+        hTitle="Z->l^{+}l^{-} p_{T} -- Gen Z p_{T} > 240 GeV" 
         hists[hName] = Book1D(hName,hTitle,500,0.,500.)
 
-        hName="Zee_pT_ptGen250"
-        hTitle="Z->e^{+}e^{-} p_{T} -- Gen Z p_{T} > 250 GeV" 
+        hName="Zll_pT_ptGen250"
+        hTitle="Z->l^{+}l^{-} p_{T} -- Gen Z p_{T} > 250 GeV" 
         hists[hName] = Book1D(hName,hTitle,500,0.,500.)
 
         hName="recZ_pT_Hpt0"
@@ -859,44 +877,35 @@ def fill_ZHists():
     if Vtype > 1: return
 
     h["Mll"].Fill(V.mass)
-    if Vtype == 0: 
-        h["Mmumu"].Fill(V.mass)
-    else:
-        h["Mee"].Fill(V.mass)
 
     if V.mass < jobpar.MinLLMass or V.mass > jobpar.MaxLLMass : return
 
-    if Vtype == 0: 
-        h["Zmumu_pT"].Fill(V.pt)
-    else:
-        h["Zee_pT"].Fill(V.pt)
-        if ( not jobpar.isData):
+    h["Zll_pT"].Fill(V.pt)
+    if ( not jobpar.isData):
+        h["recZ_pT_Hpt0"].Fill(V.pt)
+        if genH.pt >75:
+            h["recZ_pT_Hpt75"].Fill(V.pt)
+        if genH.pt >100:
+            h["recZ_pT_Hpt100"].Fill(V.pt)
+        if genH.pt >125:
+            h["recZ_pT_Hpt125"].Fill(V.pt)
+        if genH.pt >150:
+            h["recZ_pT_Hpt150"].Fill(V.pt)
+        if genH.pt >200:
+            h["recZ_pT_Hpt200"].Fill(V.pt)
 
-            # ccla
-            h["recZ_pT_Hpt0"].Fill(V.pt)
-            if genH.pt >75:
-                h["recZ_pT_Hpt75"].Fill(V.pt)
-            if genH.pt >100:
-                h["recZ_pT_Hpt100"].Fill(V.pt)
-            if genH.pt >125:
-                h["recZ_pT_Hpt125"].Fill(V.pt)
-            if genH.pt >150:
-                h["recZ_pT_Hpt150"].Fill(V.pt)
-            if genH.pt >200:
-                h["recZ_pT_Hpt200"].Fill(V.pt)
-
-            if genZ.pt >180.:
-                h["Zee_pT_ptGen180"].Fill(V.pt)
-            if genZ.pt >200.:
-                h["Zee_pT_ptGen200"].Fill(V.pt)
-            if genZ.pt >220.:
-                h["Zee_pT_ptGen220"].Fill(V.pt)
-            if genZ.pt >230.:
-                h["Zee_pT_ptGen230"].Fill(V.pt)
-            if genZ.pt >240.:
-                h["Zee_pT_ptGen240"].Fill(V.pt)
-            if genZ.pt >250.:
-                h["Zee_pT_ptGen250"].Fill(V.pt)
+        if genZ.pt >180.:
+            h["Zll_pT_ptGen180"].Fill(V.pt)
+        if genZ.pt >200.:
+            h["Zll_pT_ptGen200"].Fill(V.pt)
+        if genZ.pt >220.:
+            h["Zll_pT_ptGen220"].Fill(V.pt)
+        if genZ.pt >230.:
+            h["Zll_pT_ptGen230"].Fill(V.pt)
+        if genZ.pt >240.:
+            h["Zll_pT_ptGen240"].Fill(V.pt)
+        if genZ.pt >250.:
+            h["Zll_pT_ptGen250"].Fill(V.pt)
 
 
     return
@@ -923,9 +932,22 @@ def ApplyAK5SelectionCuts():
     if V.pt < jobpar.MinLLpTAK5 or V.pt > jobpar.MaxLLpTAK5: return False
     h[hCounterName].Fill(2.)
 
+    h["Jet1Pt_AK5"].Fill(tree.hJet_pt[0])
+    h["Jet2Pt_AK5"].Fill(tree.hJet_pt[1])
+       
+    if (tree.naJets > 0 and IsGood_aJet(0)):
+        h["Add_Jet1Pt_AK5"].Fill(tree.aJet_pt[0])
+    if (tree.naJets > 1 and IsGood_aJet(1)):
+        h["Add_Jet2Pt_AK5"].Fill(tree.aJet_pt[1])
+
     ## Dijet pT cut
     if H.pt < jobpar.MinDiJetpT: return False
     h[hCounterName].Fill(3.)
+
+    ## Combined secondary vertex cut
+    
+    h["CSV1_AK5"].Fill(tree.hJet_csv[0])
+    h["CSV2_AK5"].Fill(tree.hJet_csv[1])
 
     ### Combined secondary vertex cut
     if (tree.hJet_csv[0]<jobpar.CSV1 and tree.hJet_csv[1]<jobpar.CSV1): return False  # at least one btag>0.9
@@ -936,6 +958,7 @@ def ApplyAK5SelectionCuts():
         if (tree.hJet_csv[0]<jobpar.CSV2): return False
     h[hCounterName].Fill(5.)
 
+    ##dPhi
     h["HVdPhi_AK5"].Fill(tree.HVdPhi)
 
     if tree.Vtype ==4:
@@ -956,7 +979,7 @@ def ApplyAK5SelectionCuts():
          
     h["HMETJdPhi_AK5_alt"].Fill(METJdPhi)
 
-    ## Cut on METJdPhi for Znnu Analysis
+    ## Cut on METJdPhi for Znunu Analysis
     if METJdPhi<jobpar.MinMETJdPhi: return False
     h[hCounterName].Fill(7.)
 
@@ -964,60 +987,15 @@ def ApplyAK5SelectionCuts():
     ## Cut on number of additional jets for other analyses
     naJets=0
     for i in xrange( tree.naJets ):
-        if tree.aJet_pt[i]>jobpar.Min_aJetpt_AK5 and math.fabs(tree.aJet_eta[i]<jobpar.MaxJetEta): naJets=naJets+1
+        if (tree.aJet_pt[i]>jobpar.Min_aJetpt_AK5 and math.fabs(tree.aJet_eta[i])<jobpar.MaxJetEta) :
+            naJets=naJets+1
+    
+    h["Naddjets_AK5"].Fill(naJets)
+    
     if naJets > jobpar.MaxAjets: return False
     h[hCounterName].Fill(8.)
 
     return True
-
-def findNAK5Jets(eta0,phi0,ptMin):
-
-    ## find number of AK5 jets with pT>ptMin and located drCut away from a given jet
-    ## addional jet
-
-    drCut=1.2
-
-    n=0
-    # first loop over nhjets
-    for i in xrange( tree.nhJets ):
-        if tree.hJet_pt[i]>ptMin and \
-                math.fabs(tree.hJet_eta[i])<jobpar.MaxJetEta and \
-                deltaR(eta0,phi0,tree.hJet_eta[i],tree.hJet_phi[i]) > drCut: 
-            n=n+1
-
-    # now over the additional jets
-    for i in xrange( tree.naJets ):
-        if tree.aJet_pt[i]>ptMin and \
-                math.fabs(tree.aJet_eta[i])<jobpar.MaxJetEta and \
-                deltaR(eta0,phi0,tree.aJet_eta[i],tree.aJet_phi[i]) > drCut: 
-            n=n+1
-
-    return n
-
-def findNAK5Jets_fromFilterJets(ptMin):
-
-    ## find number of AK5 jets with pT>ptMin and located drCut away from the two leading filterJets
-    drCut=0.3
-
-    n=0
-    # first loop over nhjets
-    for i in xrange( tree.nhJets ):
-        if tree.hJet_pt[i]>ptMin and \
-                math.fabs(tree.hJet_eta[i])<jobpar.MaxJetEta and \
-                deltaR(tree.fathFilterJets_eta[0],tree.fathFilterJets_phi[0],tree.hJet_eta[i],tree.hJet_phi[i]) > drCut and \
-                deltaR(tree.fathFilterJets_eta[1],tree.fathFilterJets_phi[1],tree.hJet_eta[i],tree.hJet_phi[i]) > drCut:
-            n=n+1
-
-    # now over the additional jets
-    for i in xrange( tree.naJets ):
-        if tree.aJet_pt[i]>ptMin and \
-                math.fabs(tree.aJet_eta[i])<jobpar.MaxJetEta and \
-                deltaR(tree.fathFilterJets_eta[0],tree.fathFilterJets_phi[0],tree.aJet_eta[i],tree.aJet_phi[i]) > drCut and \
-                deltaR(tree.fathFilterJets_eta[1],tree.fathFilterJets_phi[1],tree.aJet_eta[i],tree.aJet_phi[i]) > drCut: 
-            n=n+1
-
-    print n
-    return n
 
 
 def ApplyBoostedANSelectionCuts():
@@ -1040,13 +1018,18 @@ def ApplyBoostedANSelectionCuts():
     if V.pt < jobpar.MinLLpT_BST or V.pt > jobpar.MaxLLpT_BST: return False
     h[hCounterName].Fill(2.)
 
-    if (FatH.pt< jobpar.MinFatJetpT or math.fabs(FatH.eta) > jobpar.MaxJetEta): return False
+    ## Fat Jet Pt
+    h["FatH_Pt"].Fill(FatH.pt)
+    if (FatH.pt< jobpar.MinFatJetpT): return False
     h[hCounterName].Fill(3.)
 
     nfathFilterJets=int(tree.nfathFilterJets)
     h["nFJ"].Fill(nfathFilterJets)
 
     if (nfathFilterJets < 2) : return False
+    if (tree.fathFilterJets_eta[0]>jobpar.MaxJetEta or tree.fathFilterJets_eta[1]>jobpar.MaxJetEta): return False
+    if (tree.fathFilterJets_chf[0]>0.99 or tree.fathFilterJets_chf[1]>0.99):  return False
+    
     h["ptFJ1"].Fill(tree.fathFilterJets_pt[0])
     h["ptFJ2"].Fill(tree.fathFilterJets_pt[1])
     if (nfathFilterJets > 2):
@@ -1063,6 +1046,9 @@ def ApplyBoostedANSelectionCuts():
     if (nfathFilterJets > 2) and (tree.fathFilterJets_pt[0]< tree.fathFilterJets_pt[2]):
         print "B: FilterjetPTs not sorted: ",tree.fathFilterJets_pt[0],tree.fathFilterJets_pt[2]
 
+    h["CSV1"].Fill(tree.fathFilterJets_csv[0])
+    h["CSV2"].Fill(tree.fathFilterJets_csv[1])
+
     ### Combined secondary vertex cut
     if (tree.fathFilterJets_csv[0]<jobpar.CSV1 and tree.fathFilterJets_csv[1]<jobpar.CSV1): return False  # at least one btag>0.9
     h[hCounterName].Fill(5.)
@@ -1077,7 +1063,12 @@ def ApplyBoostedANSelectionCuts():
     else:
         dPhi=math.fabs(deltaPhi(FatH.phi,V.phi))
     h["HVdPhi"].Fill(dPhi)
-    if dPhi< jobpar.MinHVdphi: return False
+
+    
+    HfiltVdphi=math.fabs(deltaPhi(FatH.filteredphi,V.phi))
+    h["HfiltVdPhi"].Fill(HfiltVdphi)
+    if HfiltVdphi < jobpar.MinHVdphi: return False
+    
     h[hCounterName].Fill(7.)
 
     METJ1dPhi=math.fabs(deltaPhi(MET.phi,tree.fathFilterJets_phi[0]))
@@ -1092,17 +1083,16 @@ def ApplyBoostedANSelectionCuts():
     h[hCounterName].Fill(8.)
 
     ## Number of additional jets
-    naJets=0
-    for i in xrange( tree.naJets ):
-        if tree.aJet_pt[i]>jobpar.Min_aJetpt_BST: naJets=naJets+1
+    ## find number of AK5 jets with pT>ptMin and located drCut away from a given jet
     
-    if naJets <= jobpar.MaxAjets: 
-        h[hCounterName].Fill(8.)
-
-    naJets=findNAK5Jets(FatH.eta,FatH.phi,jobpar.Min_aJetpt_BST)
-    # naJets=findNAK5Jets_fromFilterJets(jobpar.Min_aJetpt_BST)
-    if naJets > jobpar.MaxAjets: return False
-
+    NaddjetsFat=0
+    for i in xrange( tree.naJetsFat ):
+        if (tree.aJetFat_pt[i]>jobpar.Min_aJetpt_BST and math.fabs(tree.aJetFat_eta[i])<jobpar.MaxJetEta) :
+            NaddjetsFat=NaddjetsFat+1
+    
+    h["NaddjetsFat"].Fill(NaddjetsFat)
+    
+    if NaddjetsFat > jobpar.MaxAjets: return False
     h[hCounterName].Fill(9.)
 
 
@@ -1160,18 +1150,18 @@ def ZllComparisonPlots(wt=1.):
         return
     
     if tree.vLepton_pt[1] > tree.vLepton_pt[0]:
-        print "Leading pT Electron is 2nd electron!!!"
+        print "Leading lepton pT is 2nd lepton!!!"
         
     if goodVLepton(ltype,0):
-        h["LeadingElePt"].Fill(tree.vLepton_pt[0],wt)
-        h["LeadingEleEta"].Fill(tree.vLepton_eta[0],wt)
-        if InZMassWindow(): h["LeadingElePt_ZMass"].Fill(tree.vLepton_pt[0],wt)
+        h["LeadingLepPt"].Fill(tree.vLepton_pt[0],wt)
+        h["LeadingLepEta"].Fill(tree.vLepton_eta[0],wt)
+        if InZMassWindow(): h["LeadingLepPt_ZMass"].Fill(tree.vLepton_pt[0],wt)
 
 
     dr1=deltaR(tree.vLepton_eta[0],tree.vLepton_phi[0],tree.hJet_eta[0],tree.hJet_phi[0])
     dr2=deltaR(tree.vLepton_eta[1],tree.vLepton_phi[1],tree.hJet_eta[0],tree.hJet_phi[0])
-    h["DR_jet_Zelec"].Fill(dr1)
-    h["DR_jet_Zelec"].Fill(dr2)
+    h["DR_jet_Zlept"].Fill(dr1)
+    h["DR_jet_Zlept"].Fill(dr2)
 
 
     if IsGood_hJet(0):
@@ -1210,8 +1200,8 @@ def ZllComparisonPlots(wt=1.):
         elif Analysis == 'Subjet':
             if FatH.FatHiggsFlag == 0: continue
 
-            naJets=findNAK5Jets(FatH.eta,FatH.phi,jobpar.Min_aJetpt_BST)
-            dPhi=math.fabs(deltaPhi(FatH.phi,V.phi))
+            naJets=tree.naJetsFat
+            dPhi=math.fabs(deltaPhi(FatH.filteredphi,V.phi))
             Hpt=FatH.filteredpt
             Hmass=FatH.filteredmass
             if tree.nfathFilterJets >= 2:
@@ -1226,36 +1216,34 @@ def ZllComparisonPlots(wt=1.):
 
             inControlRegion=False
             if ControlRegion == "V+udscg": ## udscg control region (Table 13 CMS AN-2011/430)
-                if VBoson == "Z" and V.pt > jobpar.MinLLpTAK5 and naJets <= 2 and dPhi > jobpar.MinHVdphi and csv1 < jobpar.CSV1 and \
-                        tree.hJet_pt[0]> jobpar.MinJetpT1 and tree.hJet_pt[1]> jobpar.MinJetpT1:
+                if VBoson == "Z" and V.pt > jobpar.MinLLpTAK5 and \
+                       tree.hJet_pt[0]> jobpar.MinJetpT1 and tree.hJet_pt[1]> jobpar.MinJetpT1 and \
+                       naJets <= 2 and dPhi > jobpar.MinHVdphi and csv1 < jobpar.CSV1: 
                     inControlRegion=True
 
             elif ControlRegion == "V+bb":
-                if VBoson == "Z" and V.pt > jobpar.MinLLpTAK5 and naJets < 2 and dPhi > jobpar.MinHVdphi and \
-                        tree.hJet_pt[0]> jobpar.MinJetpT1 and tree.hJet_pt[1]> jobpar.MinJetpT1 and \
-                        csv1 > CSVT and csv2 > 0.5 and (Hmass < 90. or Hmass > 145.): 
+                if VBoson == "Z" and tree.hJet_pt[0]> jobpar.MinJetpT1 and tree.hJet_pt[1]> jobpar.MinJetpT1 and \
+                       naJets < 2 and dPhi > jobpar.MinHVdphi and csv1 > CSVT and csv2 > 0.5 and (Hmass < 90. or Hmass > 145.): 
                     inControlRegion=True
 
             elif ControlRegion == "ttbar":
-                if nVLepton(ltype) > 1 and (not InZMassWindow()) and csv1 > CSVT and csv2 > 0.5 and Hpt> 100. and \
-                        tree.hJet_pt[0]> jobpar.MinJetpT1 and tree.hJet_pt[1]> jobpar.MinJetpT1:
+                if (not InZMassWindow()) and tree.hJet_pt[0]> jobpar.MinJetpT1 and tree.hJet_pt[1]> jobpar.MinJetpT1 and \
+                       csv1 > CSVT and csv2 > 0.5 and Hpt> 100.:
                     inControlRegion=True
 
-            if inControlRegion:
+            if inControlRegion and goodVLepton(ltype,0) and goodVLepton(ltype,1):
                 
                 ## comparision plots 
-
-                h["Mee_"+ Analysis + "Analysis_" + ControlRegion + "CR"].Fill(V.mass,wt)    
-                h["Zee_pT_" + Analysis + "Analysis_" + ControlRegion + "CR"].Fill(V.pt,wt)
-
-                h["BDT_" + Analysis + "Analysis_" + ControlRegion + "CR"].Fill(bdt,wt)
-
                 if (Analysis=="AK5" and IsGood_hJet(0) and IsGood_hJet(1)) or \
                         (Analysis=="Subjet" and \
                              ((tree.nfathFilterJets == 2 and IsGood_fJet(0) and IsGood_fJet(1)) or \
                                   (tree.nfathFilterJets == 3 and IsGood_fJet(0) and IsGood_fJet(1) and IsGood_fJet(2)))):
 
-                    # satifies jet ID and pt requirements
+                    h["Mll_"+ Analysis + "Analysis_" + ControlRegion + "CR"].Fill(V.mass,wt)    
+                    h["Zll_pT_" + Analysis + "Analysis_" + ControlRegion + "CR"].Fill(V.pt,wt)
+                    
+                    h["BDT_" + Analysis + "Analysis_" + ControlRegion + "CR"].Fill(bdt,wt)
+                    
                     h["Hmass_" + Analysis + "Analysis_" + ControlRegion + "CR"].Fill(Hmass,wt)
                     h["Hpt_" + Analysis + "Analysis_" + ControlRegion + "CR"].Fill(Hpt,wt)
 
@@ -1291,16 +1279,6 @@ def IsGood_fJet(indx):
 def IsGood_hJet(indx):
 
     
-    ## if math.fabs(tree.hJet_nhf[indx]) > 0.99: return False 
-    ## if math.fabs(tree.hJet_nef[indx]) > 0.99: return False 
-    ## if tree.hJet_nconstituents < 2: return False
-    ## 
-    ## if (math.fabs(tree.hJet_eta[indx]) < 2.4):
-    ##     if (tree.hJet_cef[indx] > 0.99): return False
-    ##     if (tree.hJet_chf[indx] == 0): return False
-    ##     if (tree.hJet_nch[indx] == 0): return False
-
-
     if math.fabs(tree.hJet_eta[indx]) > jobpar.MaxJetEta: return False 
     if tree.hJet_pt[indx]< jobpar.MinJetpT1: return False
 
@@ -1322,18 +1300,8 @@ def IsGood_hJet(indx):
 
 def IsGood_aJet(indx):
 
-    if tree.aJet_pt[indx]< jobpar.MinJetpT1: return False
+    if tree.aJet_pt[indx]< jobpar.Min_aJetpt_AK5: return False
     if math.fabs(tree.aJet_eta[indx]) > jobpar.MaxJetEta: return False 
-    ## if math.fabs(tree.aJet_nhf[indx]) > 0.99: return False 
-    ## if math.fabs(tree.aJet_nef[indx]) > 0.99: return False 
-    ## if tree.aJet_nconstituents < 2: return False
-    ## 
-    ## if (math.fabs(tree.aJet_eta[indx]) < 2.4):
-    ##     if (tree.aJet_cef[indx] > 0.99): return False
-    ##     if (tree.aJet_chf[indx] == 0): return False
-    ##     if (tree.aJet_nch[indx] == 0): return False
-    ## 
-    ## return True
 
     jid=False
 
@@ -1432,7 +1400,7 @@ def BoostedAnalysis(wt=1.):
         # print fathFilterJets_pt[0],corr,corrpt
 
 
-        if nfathFilterJets>2:
+        if nfathFilterJets>2 and fathFilterJets_pt[2] > jobpar.MinFJ3pT:
         ## if nfathFilterJets>2 and fathFilterJets_pt[2]> 20:
             # F3.SetPtEtaPhiE(fathFilterJets_pt[2],fathFilterJets_eta[2],fathFilterJets_phi[2],fathFilterJets_e[2])
             corr3=ApplyAK3Residual( fathFilterJets_pt[2] )
@@ -1456,8 +1424,6 @@ def BoostedAnalysis(wt=1.):
 
 
 def GeneratedInfo():
-
-    # if genZ.pt<50: return
 
     h["MC_Counter"].Fill(0.)  # count the number processed
     h["genHpt"].Fill(genH.pt)
@@ -1502,8 +1468,6 @@ def GeneratedInfo():
 
 def processEvent():
 
-    ## if jobpar.isData and EVENT.run < 175860:return
-
     h["Counter"].Fill(0.)  # count the number processed
     h["Json"].Fill(float(EVENT.json))
     if not EVENT.json: return
@@ -1514,15 +1478,9 @@ def processEvent():
         print "njJets<2. -- This should not happen"
         return
 
-    # nt=0
-    # s=" "
-    for itrig in xrange( len(triggers) ):
-        #nt=nt+triggers[itrig]
-        #s=s+str(triggers[itrig])
-        if triggers[itrig]>0: h["TriggerBits"].Fill(itrig)
 
-    # print "XXXX ",s
-    # print "Trig Sum: ",nt
+    for itrig in xrange( len(triggers) ):
+        if triggers[itrig]>0: h["TriggerBits"].Fill(itrig)
 
     trigWeight=1.
     if jobpar.TriggerBit > -1:
@@ -1535,6 +1493,9 @@ def processEvent():
             if (WhichAnalysis == "Zee"):
                 if triggers[5]==0 and triggers[6]==0: return  # single electron
                 trigWeight=1.
+            elif (WhichAnalysis == "Zmumu"):
+                if triggers[0]==0 and triggers[23]==0: return  
+                trigWeight=1. # check for muons
             else:
                 print "Trigger analysis not yet setup for ",WhichAnalysis," analysis"
                 sys.exit(1)
@@ -1542,6 +1503,9 @@ def processEvent():
             if (WhichAnalysis == "Zee"):
                 if triggers[5]==0 and triggers[6]==0: return  # double electron
                 trigWeight=tree.weightTrig2012ADiEle
+            elif (WhichAnalysis == "Zmumu"):
+                if triggers[14]==0 and triggers[23]==0: return 
+                trigWeight=tree.weightTrig2012ASingleMuon
             else:
                 print "Trigger analysis not yet setup for ",WhichAnalysis," analysis"
                 sys.exit(1)
@@ -1724,32 +1688,6 @@ if __name__ == "__main__":
     # setup BDT
     reader_ak5 = BDT_READER_AK5(jobpar.BDT_Weights_AK5)
     reader_bst = BDT_READER_BST(jobpar.BDT_Weights_BST)
-
-    ## reader = TMVA.Reader("Color:!Silent");
-    ## 
-    ## bdt_Hmass = array( 'f', [ 0 ] )
-    ## bdt_Hpt = array( 'f', [ 0 ] )
-    ## bdt_Vpt = array( 'f', [ 0 ] )
-    ## bdt_csv0 = array( 'f', [ 0 ] )
-    ## bdt_csv1 = array( 'f', [ 0 ] )
-    ## bdt_HVdPhi = array( 'f', [ 0 ] )
-    ## bdt_dEta = array( 'f', [ 0 ] )
-    ## 
-    ## bdt_hpt0 = array( 'f', [ 0 ] )
-    ## bdt_hpt1 = array( 'f', [ 0 ] )
-    ## 
-    ## reader.AddVariable("H_mass := H.mass", bdt_Hmass );
-    ## reader.AddVariable("H_pt := H.pt", bdt_Hpt );
-    ## reader.AddVariable("V_pt :=V.pt", bdt_Vpt );
-    ## reader.AddVariable("hJ12_MaxCsv := max(hJet_csv[0],hJet_csv[1])", bdt_csv0 );
-    ## reader.AddVariable("hJ12_MinCsv := min(hJet_csv[0],hJet_csv[1])", bdt_csv1 );
-    ## reader.AddVariable("HV_dPhi := HVdPhi", bdt_HVdPhi );
-    ## reader.AddVariable("H_dEta := H.dEta", bdt_dEta );
-    ## 
-    ## reader.AddSpectator("hJet_pt[0]", bdt_hpt0 );
-    ## reader.AddSpectator("hJet_pt[1]", bdt_hpt1 );
-    ## 
-    ## reader.BookMVA("BDT", jobpar.BDT_Weights_AK5);
 
     decade=0
     for jentry in xrange( nevt ):
