@@ -35,8 +35,7 @@ maxmass=300.
 
 CSVT=0.898
 
-# ROOT.gROOT.LoadMacro('higgsStruct.h+')
-ROOT.gROOT.LoadMacro('higgsStruct_new.h+')
+ROOT.gROOT.LoadMacro('higgsStruct.h+')
 
 ########################################
 
@@ -507,9 +506,21 @@ def Book_MCHists(hists):
     outf.mkdir("MC")
     outf.cd("MC")
 
+    hName="genHpt"
+    hTitle="Generated Higgs p{T}" 
+    hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+
+    hName="genHmass"
+    hTitle="Generated Higgs mass" 
+    hists[hName] = Book1D(hName,hTitle,100,100.,200.)
+
     hName="genZpt"
     hTitle="Generated Z p{T}" 
     hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+
+    hName="genZmass"
+    hTitle="Generated Z mass" 
+    hists[hName] = Book1D(hName,hTitle,50,0.,200.)
 
     hName="genWpt"
     hTitle="Generated W p{T}" 
@@ -553,6 +564,10 @@ def Book_VHists(hists):
     hTitle="ll Mass" 
     hists[hName] = Book1D(hName,hTitle,150,0.,150.)
 
+    hName="MT"
+    hTitle="Transverse Mass" 
+    hists[hName] = Book1D(hName,hTitle,200,0.,200.)
+
     hName="Mmumu"
     hTitle="#mu#mu Mass" 
     hists[hName] = Book1D(hName,hTitle,150,0.,150.)
@@ -568,6 +583,10 @@ def Book_VHists(hists):
     hName="Zee_pT"
     hTitle="Z->e^{+}e^{-} p_{T}" 
     hists[hName] = Book1D(hName,hTitle,500,0.,500.)
+
+    hName="Wlnu_pT"
+    hTitle="W->l#nu p_{T}" 
+    hists[hName] = Book1D(hName,hTitle,1000,0.,1000.)
 
     if ( not jobpar.isData):
         hName="Zee_pT_ptGen180"
@@ -593,6 +612,60 @@ def Book_VHists(hists):
         hName="Zee_pT_ptGen250"
         hTitle="Z->e^{+}e^{-} p_{T} -- Gen Z p_{T} > 250 GeV" 
         hists[hName] = Book1D(hName,hTitle,500,0.,500.)
+
+        hName="recZ_pT_Hpt0"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 0." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="recZ_pT_Hpt75"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 75." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="recZ_pT_Hpt100"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 100." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="recZ_pT_Hpt125"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 125." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="recZ_pT_Hpt150"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 150." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="recZ_pT_Hpt200"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 200." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+
+        hName="genZ_pT_Hpt0"
+        hTitle="Generated Z p{T} -- H p_{T} > 0." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="genZ_pT_Hpt100"
+        hTitle="Generated Z p{T} -- H p_{T} > 100." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="genZ_pT_Hpt150"
+        hTitle="Generated Z p{T} -- H p_{T} > 150." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="genZ_pT_Hpt200"
+        hTitle="Generated Z p{T} -- H p_{T} > 200." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+
+        hName="Wlnu_pT_Hpt0"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 0." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="Wlnu_pT_Hpt75"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 75." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="Wlnu_pT_Hpt100"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 100." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="Wlnu_pT_Hpt125"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 125." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="Wlnu_pT_Hpt150"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 150." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="Wlnu_pT_Hpt200"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 200." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
+        hName="Wlnu_pT_Hpt250"
+        hTitle="Reconstructed Z p{T} -- H p_{T} > 250." 
+        hists[hName] = Book1D(hName,hTitle,200,0.,1000.)
 
     outf.cd()
 
@@ -732,10 +805,13 @@ def goodVLepton(ltype,i):
     if tree.vLepton_pt[i] < MinPt : return False
     if math.fabs(tree.vLepton_eta[i])>1.44 and math.fabs(tree.vLepton_eta[i])<1.57: return False
     if math.fabs(tree.vLepton_eta[i])>jobpar.MaxLeptonEta: return False
-    ## if math.fabs(tree.vLepton_id95[i] -7.0) > 0.001: return False
-    leptonID=tree.vLepton_id2012tight[i]
 
-    return leptonID
+    if run2011:
+        if math.fabs(tree.vLepton_id95[i] -7.0) > 0.001: return False
+    else:
+        if not tree.vLepton_id2012tight[i]:return False
+
+    return True
 
 def nVLepton(ltype):
 
@@ -753,6 +829,29 @@ def InZMassWindow():
     if V.mass < jobpar.MinLLMass or V.mass > jobpar.MaxLLMass : return False
 
     return True
+
+def fill_WHists():
+
+    Vtype=tree.Vtype
+    if Vtype < 2 or Vtype>3: return
+
+    h["MT"].Fill(V.mass)
+    h["Wlnu_pT"].Fill(V.pt)
+
+    if (not jobpar.isData):
+        h["Wlnu_pT_Hpt0"].Fill(V.pt)
+        if genH.pt >75:
+            h["Wlnu_pT_Hpt75"].Fill(V.pt)
+        if genH.pt >100:
+            h["Wlnu_pT_Hpt100"].Fill(V.pt)
+        if genH.pt >125:
+            h["Wlnu_pT_Hpt125"].Fill(V.pt)
+        if genH.pt >150:
+            h["Wlnu_pT_Hpt150"].Fill(V.pt)
+        if genH.pt >200:
+            h["Wlnu_pT_Hpt200"].Fill(V.pt)
+        if genH.pt >250:
+            h["Wlnu_pT_Hpt250"].Fill(V.pt)
 
 def fill_ZHists():
 
@@ -772,17 +871,31 @@ def fill_ZHists():
     else:
         h["Zee_pT"].Fill(V.pt)
         if ( not jobpar.isData):
-            if tree.genZpt >180.:
+
+            # ccla
+            h["recZ_pT_Hpt0"].Fill(V.pt)
+            if genH.pt >75:
+                h["recZ_pT_Hpt75"].Fill(V.pt)
+            if genH.pt >100:
+                h["recZ_pT_Hpt100"].Fill(V.pt)
+            if genH.pt >125:
+                h["recZ_pT_Hpt125"].Fill(V.pt)
+            if genH.pt >150:
+                h["recZ_pT_Hpt150"].Fill(V.pt)
+            if genH.pt >200:
+                h["recZ_pT_Hpt200"].Fill(V.pt)
+
+            if genZ.pt >180.:
                 h["Zee_pT_ptGen180"].Fill(V.pt)
-            if tree.genZpt >200.:
+            if genZ.pt >200.:
                 h["Zee_pT_ptGen200"].Fill(V.pt)
-            if tree.genZpt >220.:
+            if genZ.pt >220.:
                 h["Zee_pT_ptGen220"].Fill(V.pt)
-            if tree.genZpt >230.:
+            if genZ.pt >230.:
                 h["Zee_pT_ptGen230"].Fill(V.pt)
-            if tree.genZpt >240.:
+            if genZ.pt >240.:
                 h["Zee_pT_ptGen240"].Fill(V.pt)
-            if tree.genZpt >250.:
+            if genZ.pt >250.:
                 h["Zee_pT_ptGen250"].Fill(V.pt)
 
 
@@ -1087,20 +1200,21 @@ def ZllComparisonPlots(wt=1.):
 
         bdt=-999.
         if Analysis == 'AK5':
+            if H.HiggsFlag == 0: continue
             naJets=tree.naJets
             dPhi=tree.HVdPhi
             Hpt=H.pt
             Hmass=H.mass
-            if (H.HiggsFlag > 0):
-                bdt=reader_ak5.evaluate()
+            bdt=reader_ak5.evaluate()
 
         elif Analysis == 'Subjet':
-               
+            if FatH.FatHiggsFlag == 0: continue
+
             naJets=findNAK5Jets(FatH.eta,FatH.phi,jobpar.Min_aJetpt_BST)
             dPhi=math.fabs(deltaPhi(FatH.phi,V.phi))
             Hpt=FatH.filteredpt
             Hmass=FatH.filteredmass
-            if (FatH.FatHiggsFlag > 0 and tree.nfathFilterJets >= 2):
+            if tree.nfathFilterJets >= 2:
                 bdt=reader_bst.evaluate()
         else:
             print "Undefined Control Region"
@@ -1112,15 +1226,19 @@ def ZllComparisonPlots(wt=1.):
 
             inControlRegion=False
             if ControlRegion == "V+udscg": ## udscg control region (Table 13 CMS AN-2011/430)
-                if VBoson == "Z" and V.pt > jobpar.MinLLpTAK5 and naJets < 2 and dPhi > jobpar.MinHVdphi and csv1 < jobpar.CSV1: 
+                if VBoson == "Z" and V.pt > jobpar.MinLLpTAK5 and naJets <= 2 and dPhi > jobpar.MinHVdphi and csv1 < jobpar.CSV1 and \
+                        tree.hJet_pt[0]> jobpar.MinJetpT1 and tree.hJet_pt[1]> jobpar.MinJetpT1:
                     inControlRegion=True
 
             elif ControlRegion == "V+bb":
-                if VBoson == "Z" and V.pt > jobpar.MinLLpTAK5 and naJets < 2 and dPhi > jobpar.MinHVdphi and csv1 > CSVT and csv2 > 0.5 and (Hmass < 90. or Hmass > 145.): 
+                if VBoson == "Z" and V.pt > jobpar.MinLLpTAK5 and naJets < 2 and dPhi > jobpar.MinHVdphi and \
+                        tree.hJet_pt[0]> jobpar.MinJetpT1 and tree.hJet_pt[1]> jobpar.MinJetpT1 and \
+                        csv1 > CSVT and csv2 > 0.5 and (Hmass < 90. or Hmass > 145.): 
                     inControlRegion=True
 
             elif ControlRegion == "ttbar":
-                if nVLepton(ltype) > 1 and (not InZMassWindow()) and csv1 > CSVT and csv2 > 0.5 and Hpt> 100.:
+                if nVLepton(ltype) > 1 and (not InZMassWindow()) and csv1 > CSVT and csv2 > 0.5 and Hpt> 100. and \
+                        tree.hJet_pt[0]> jobpar.MinJetpT1 and tree.hJet_pt[1]> jobpar.MinJetpT1:
                     inControlRegion=True
 
             if inControlRegion:
@@ -1133,9 +1251,11 @@ def ZllComparisonPlots(wt=1.):
                 h["BDT_" + Analysis + "Analysis_" + ControlRegion + "CR"].Fill(bdt,wt)
 
                 if (Analysis=="AK5" and IsGood_hJet(0) and IsGood_hJet(1)) or \
-                        (Analysis=="Subjet" and IsGood_fJet(0) and IsGood_fJet(1) and IsGood_fJet(2)) :
-                        # satifies jet ID and pt requirements
+                        (Analysis=="Subjet" and \
+                             ((tree.nfathFilterJets == 2 and IsGood_fJet(0) and IsGood_fJet(1)) or \
+                                  (tree.nfathFilterJets == 3 and IsGood_fJet(0) and IsGood_fJet(1) and IsGood_fJet(2)))):
 
+                    # satifies jet ID and pt requirements
                     h["Hmass_" + Analysis + "Analysis_" + ControlRegion + "CR"].Fill(Hmass,wt)
                     h["Hpt_" + Analysis + "Analysis_" + ControlRegion + "CR"].Fill(Hpt,wt)
 
@@ -1202,8 +1322,8 @@ def IsGood_hJet(indx):
 
 def IsGood_aJet(indx):
 
-    ## if tree.aJet_pt[indx]< jobpar.MinJetpT1: return False
-    ## if math.fabs(tree.aJet_eta[indx]) > jobpar.MaxJetEta: return False 
+    if tree.aJet_pt[indx]< jobpar.MinJetpT1: return False
+    if math.fabs(tree.aJet_eta[indx]) > jobpar.MaxJetEta: return False 
     ## if math.fabs(tree.aJet_nhf[indx]) > 0.99: return False 
     ## if math.fabs(tree.aJet_nef[indx]) > 0.99: return False 
     ## if tree.aJet_nconstituents < 2: return False
@@ -1337,24 +1457,38 @@ def BoostedAnalysis(wt=1.):
 
 def GeneratedInfo():
 
-    # if tree.genZpt<50: return
+    # if genZ.pt<50: return
 
     h["MC_Counter"].Fill(0.)  # count the number processed
-    h["genZpt"].Fill(tree.genZpt)
+    h["genHpt"].Fill(genH.pt)
+    h["genHmass"].Fill(genH.mass)
+
+    h["genZpt"].Fill(genZ.pt)
+    h["genZmass"].Fill(genZ.mass)
 
     h["genWpt"].Fill(tree.genWpt)
+
+
+    h["genZ_pT_Hpt0"].Fill(genZ.pt)
+    if genH.pt >100:
+        h["genZ_pT_Hpt100"].Fill(genZ.pt)
+    if genH.pt >150:
+        h["genZ_pT_Hpt150"].Fill(genZ.pt)
+    if genH.pt >200:
+        h["genZ_pT_Hpt200"].Fill(genZ.pt)
+
 
     if tree.nhJets>1:
         h["MC_Counter"].Fill(1.)  
         if (tree.hJet_pt[0]>20. and tree.hJet_pt[1]>20):
 
-            if tree.genZpt<100:
+            if genZ.pt<100:
                 h["Hmass_50genZpt100"].Fill(H.mass)
-            elif tree.genZpt<150:
+            elif genZ.pt<150:
                 h["Hmass_100genZpt150"].Fill(H.mass)
-            elif tree.genZpt<200:
+            elif genZ.pt<200:
                 h["Hmass_150genZpt200"].Fill(H.mass)
-            elif tree.genZpt<300:
+            elif genZ.pt<300:
                 h["Hmass_200genZpt300"].Fill(H.mass)
             else:
                 h["Hmass_300genZpt"].Fill(H.mass)
@@ -1362,7 +1496,7 @@ def GeneratedInfo():
             h["MC_Counter"].Fill(2.)
             if (H.mass>80 and H.mass<150):
                 h["MC_Counter"].Fill(3.)  # count the number processed
-                h["genZpt_candH"].Fill(tree.genZpt)
+                h["genZpt_candH"].Fill(genZ.pt)
 
 
 
@@ -1389,10 +1523,29 @@ def processEvent():
 
     # print "XXXX ",s
     # print "Trig Sum: ",nt
+
+    trigWeight=1.
     if jobpar.TriggerBit > -1:
         # print jobpar.TriggerBit,triggers[jobpar.TriggerBit],triggers[5]
         # if triggers[jobpar.TriggerBit]==0: return
-        if triggers[5]==0 and triggers[6]==0: return
+
+        ## HardWire in the triggers for now
+        trigWeight=0.
+        if run2011:
+            if (WhichAnalysis == "Zee"):
+                if triggers[5]==0 and triggers[6]==0: return  # single electron
+                trigWeight=1.
+            else:
+                print "Trigger analysis not yet setup for ",WhichAnalysis," analysis"
+                sys.exit(1)
+        else:
+            if (WhichAnalysis == "Zee"):
+                if triggers[5]==0 and triggers[6]==0: return  # double electron
+                trigWeight=tree.weightTrig2012ADiEle
+            else:
+                print "Trigger analysis not yet setup for ",WhichAnalysis," analysis"
+                sys.exit(1)
+
     h["Counter"].Fill(2.)
 
 
@@ -1402,6 +1555,8 @@ def processEvent():
 
     
     fill_ZHists()
+    fill_WHists()
+
     if InZMassWindow(): h["Counter"].Fill(3.)
 
     if jobpar.heavyJets:
@@ -1423,8 +1578,8 @@ def processEvent():
 
     if jobpar.isData:
         ## apply trigger weight
-        if tree.weightTrig2012ADiEle>0.001:
-            wt=wt/tree.weightTrig2012ADiEle
+        if trigWeight>0.001:
+            wt=wt/trigWeight
         else:
             wt=0.
 
@@ -1536,6 +1691,11 @@ if __name__ == "__main__":
     MET      = ROOT.METInfo()
     METnoPU  = ROOT.METInfo()
     METnoPUCh= ROOT.METInfo()
+    genZ     = ROOT.genParticleInfo()
+    genZstar = ROOT.genParticleInfo()
+    genH     = ROOT.genParticleInfo()
+    genW     = ROOT.genParticleInfo()
+    genWstar = ROOT.genParticleInfo()
 
     tree.SetBranchAddress("FatH",  AddressOf(FatH, "FatHiggsFlag") );
     tree.SetBranchAddress("H",     AddressOf(H, "HiggsFlag") );
@@ -1544,6 +1704,11 @@ if __name__ == "__main__":
     tree.SetBranchAddress("MET"      , AddressOf(MET, "et") );
     tree.SetBranchAddress("METnoPU"  , AddressOf(METnoPU, "et") );
     tree.SetBranchAddress("METnoPUCh", AddressOf(METnoPUCh, "et") );
+    tree.SetBranchAddress("genH",  AddressOf(genH, "mass") );
+    tree.SetBranchAddress("genZ",  AddressOf(genZ, "mass") );
+    tree.SetBranchAddress("genW",  AddressOf(genW, "mass") );
+    tree.SetBranchAddress("genZstar",  AddressOf(genZstar, "mass") );
+    tree.SetBranchAddress("genWstar",  AddressOf(genWstar, "mass") );
 
     triggers = defineArray( 'b' , 39 )
     tree.SetBranchAddress("triggerFlags",triggers)
@@ -1552,7 +1717,7 @@ if __name__ == "__main__":
     NEntries = tree.GetEntries()
     print "Number of entries on Tree:",NEntries
     nevt=NEntries
-    if jobpar.nevts>-1:
+    if jobpar.nevts>-1 and jobpar.nevts<nevt:
         nevt=jobpar.nevts
     print "Processing: ",nevt," events"
 
@@ -1594,6 +1759,14 @@ if __name__ == "__main__":
         if (k > decade):
             print 10*k," %",jentry, "\tRun:Event:lumi:json: ",EVENT.run, EVENT.event, EVENT.lumi, EVENT.json
         decade = k  
+
+        run2011=False
+        if jobpar.isData:
+            if EVENT.run < 190000: 
+                run2011=True
+        else:
+            if jobpar.MC7TeV:
+                run2011=True
 
         tree.GetEntry(jentry) 
         processEvent()  ### work is done here

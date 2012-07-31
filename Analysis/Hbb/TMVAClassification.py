@@ -42,13 +42,14 @@ import math
 
 # Default settings for command line arguments
 OUTFNAME = "TMVA.root"
+OUTDIR = "TMVAout"
 ANALYSIS="Dijet"
 TREE  = "tree"
 
 INPUTDIR="dcache:/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2"
 SAMPLES={
     # key      :( Sig or Bckg,    rootfile,                                               cross section)
-    "HIGGS"    :("S","DiJetPt_ZH_ZToLL_HToBB_M-120_8TeV-powheg-herwigpp.root",                   22.97),
+    "HIGGS"    :("S","DiJetPt_ZH_ZToLL_HToBB_M-125_8TeV-powheg-herwigpp.root",                   22.97),
     "ZJets_ptL":("B","DiJetPt_DYJetsToLL_PtZ-70To100_TuneZ2star_8TeV-madgraph-tarball.root",   62140.0),
     "ZJets_ptH":("B","DiJetPt_DYJetsToLL_PtZ-100_TuneZ2star_8TeV-madgraph.root",               40510.0),
     "ZZ"       :("B","DiJetPt_ZZ_TuneZ2star_8TeV_pythia6_tauola.root",                         8255.61),
@@ -63,11 +64,18 @@ SAMPLES={
     "STbar-tW" :("B","DiJetPt_Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola.root" ,         11177.3),
     }
 
+FRIENDS={
+    # key      :( Sig or Bckg,    rootfile,                                               cross section)
+    "HIGGS"    :("friend.root"),
+    "ZJets_ptL":("friendDY.root"),
+    }
+
 # Print usage help
 def usage():
     print " "
     print "Usage: python %s [options]" % sys.argv[0]
     print "  -o | --outputfile : name of output ROOT file containing results (default: '%s')" % OUTFNAME
+    print "  -d | --outputdir : name of output directory for the xml files (default: '%s')" % OUTDIR
     print "  -a | --analysis : Dijet or Subjet (default: '%s')" % ANALYSIS
     print "  -v | --verbose"
     print "  -? | --usage      : print this help message"
@@ -87,8 +95,8 @@ def main():
 
     try:
         # retrive command line options
-        shortopts  = "a:o:vh?"
-        longopts   = ["analysis=","outputfile=", "verbose", "help", "usage"]
+        shortopts  = "a:o:d:vh?"
+        longopts   = ["analysis=","outputfile=", "outputdir=","verbose", "help", "usage"]
         opts, args = getopt.getopt( sys.argv[1:], shortopts, longopts )
 
     except getopt.GetoptError:
@@ -98,6 +106,7 @@ def main():
         sys.exit(1)
 
     _outfname   = OUTFNAME
+    _outdir     = OUTDIR
     _analysis   = ANALYSIS
     verbose     = False
     for o, a in opts:
@@ -106,6 +115,8 @@ def main():
             sys.exit(0)
         elif o in ("-o", "--outputfile"):
             _outfname = a
+        elif o in ("-d", "--outputdir"):
+            _outdir = a
         elif o in ("-a", "--analysis"):
             _analysis = a
         elif o in ("-v", "--verbose"):
@@ -142,7 +153,16 @@ def main():
     # (please check "src/Config.h" to see all available global options)
     #    gConfig().GetVariablePlotting()).fTimesRMS = 8.0
     #    gConfig().GetIONames()).fWeightFileDir = "myWeightDirectory"
-    TMVA.gConfig().GetIONames().fWeightFileDir = "weights_" + _analysis
+    # TMVA.gConfig().GetIONames().fWeightFileDir = "weights_" + _analysis
+    # OutDir="weights_" + _analysis
+
+    if os.path.exists(_outdir):
+        print "Output directory: ",_outdir," already exists, please specify new directory"
+        sys.exit(1)
+
+    os.makedirs(_outdir)
+    TMVA.gConfig().GetIONames().fWeightFileDir = _outdir
+        
 
     # Define the input variables that shall be used for the classifier training
     # note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
@@ -193,14 +213,15 @@ def main():
     ## Get the Signal and Background trees
     for Sample in SAMPLES.keys():
         SampleInfo=SAMPLES[Sample]
+        ## FriendInfo=FRIENDS[Sample]
 
         SampleType=SampleInfo[0] # signal or background
         infile=os.path.join(INPUTDIR,SampleInfo[1])
         xs=SampleInfo[2]
 
-        ## get number of step 1 events
-        f=TFile.Open(infile)
-        h = f.Get("Count")
+
+        f=TFile.Open(infile)# Open the input file 
+        h = f.Get("Count")  # get number of step 1 events
         nEVT=int(h.GetBinContent(1))
 
         wt  =xs/(nEVT)        
@@ -208,6 +229,9 @@ def main():
         print "XS:nEVT:wt: ", xs,nEVT,wt
 
         theTree      = f.Get( TREE )
+
+
+        # theTree.AddFriend("treeFR",FriendInfo)
         if SampleType == "S":
             factory.AddSignalTree    ( theTree, wt )
         elif SampleType == "B":
@@ -227,7 +251,6 @@ def main():
             "V.pt > 100.0"           + " && " +\
             "hJet_pt[0] > 20.0"      + " && " +\
             "hJet_pt[1] > 20.0"      + " && " +\
-            "H.pt > 100.0"           + " && " +\
             "H.mass > 80.0"          + " && " +\
             "H.mass < 150.0"         + " && " +\
             "max(hJet_csv[0],hJet_csv[1]) > 0.244"  + " && " +\
@@ -242,7 +265,6 @@ def main():
             "nfathFilterJets >= 2"   + " && " +\
             "fathFilterJets_pt[0] > 20.0"      + " && " +\
             "fathFilterJets_pt[1] > 20.0"      + " && " +\
-            "FatH.filteredpt > 100.0"          + " && " +\
             "FatH.filteredmass > 80.0"          + " && " +\
             "FatH.filteredmass < 150.0"         + " && " +\
             "max(fathFilterJets_csv[0],fathFilterJets_csv[1]) > 0.244"  + " && " +\

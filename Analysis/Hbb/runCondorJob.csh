@@ -2,8 +2,8 @@
 
 set noglob   #  prevent filename expansion with wildcard pattern matching
 
-        if ($#argv < 2) then
-            echo "Please supply a configuration file and your working Directory"
+        if ($#argv < 1) then
+            echo "Please supply process number"
             echo " "
             exit 1
         endif
@@ -12,7 +12,7 @@ set noglob   #  prevent filename expansion with wildcard pattern matching
 
 
 set pid=$argv[1]
-set workDir=$argv[2]
+set workDir=$ANALYZEDIRECTORY
 set cfgFile = cfgs/Zee.cfg
 
 set isData=0
@@ -20,7 +20,7 @@ set nevts=-1
 set doHeavy=0
 set doLight=0
 
-set outdir=2012hsts
+set outdir=2012hsts_new
 
 switch ($pid)
     case 0:
@@ -35,11 +35,12 @@ switch ($pid)
     	breaksw
     case 2:
         set doHeavy=1
-    	set inputFiles  = "/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball.root"
+    	set inputFiles  = "/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_Skim_bjets.root"
     	set outputFiles = "$outdir"/Hbb_Zee__DYJetsToLL_M-50_bJets.root
     	breaksw
     case 3:
-        set inputFiles  = "/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_TTJets_TuneZ2star_8TeV-madgraph-tauola.root"
+        # set inputFiles  = "/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_TTJets_TuneZ2star_8TeV-madgraph-tauola.root"
+	set inputFiles  = "/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_TTJets_Merged.root"
     	set outputFiles = "$outdir"/Hbb_Zee__TTJets.root
     	breaksw
     case 4:
@@ -53,7 +54,7 @@ switch ($pid)
        	breaksw
     case 6:
         set doHeavy=1
-    	set inputFiles = "/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_DYJetsToLL_PtZ-100_TuneZ2star_8TeV-madgraph.root"
+    	set inputFiles = "/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_DYJetsToLL_PtZ-100_TuneZ2star_8TeV-madgraph_Skim_bjets.root"
     	set outputFiles = "$outdir"/Hbb_Zee__DYJetsToLL_pT100_bJets.root
        	breaksw
     case 7:
@@ -63,7 +64,7 @@ switch ($pid)
        	breaksw
     case 8:
         set doHeavy=1
-    	set inputFiles = "/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_DYJetsToLL_PtZ-70To100_TuneZ2star_8TeV-madgraph-tarball.root"
+    	set inputFiles = "/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_DYJetsToLL_PtZ-70To100_TuneZ2star_8TeV-madgraph-tarball_Skim_bjets.root"
     	set outputFiles = "$outdir"/Hbb_Zee__DYJetsToLL_pT70-100_bJets.root
        	breaksw
     case 9:
