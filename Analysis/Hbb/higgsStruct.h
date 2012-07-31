@@ -1,22 +1,24 @@
 struct FatHiggsInfo{
-  Bool_t FatHiggsFlag;
+  Int_t FatHiggsFlag;
   Float_t mass;
   Float_t pt;
   Float_t eta;
   Float_t phi;
   Float_t filteredmass;
   Float_t filteredpt;
+  Float_t filteredeta;
+  Float_t filteredphi;
 };
 
-
 struct HiggsInfo{
-  Float_t mass;
-  Float_t pt;  
-  Float_t eta; 
-  Float_t phi; 
-  Float_t dR;  
-  Float_t dPhi;
-  Float_t dEta;
+  int HiggsFlag;
+  float mass;
+  float pt;  
+  float eta; 
+  float phi; 
+  float dR;  
+  float dPhi;
+  float dEta;
 };
 
 struct VInfo{
@@ -39,4 +41,15 @@ struct METInfo
   Float_t sumet;   
   Float_t sig;
   Float_t phi;
+};
+
+struct genParticleInfo
+{
+  float mass; 
+  float pt;
+  float eta;
+  float phi;
+  float status;
+  float charge;
+  float momid;
 };
