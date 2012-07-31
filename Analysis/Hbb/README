@@ -1,0 +1,24 @@
+
+Instructions for downloading and running HbbAnalyser.py
+
+To download:
+> cvs co -d Analysis/Hbb UserCode/Apana/Analysis/Hbb
+
+To run:
+> python HbbAnalyzer.py cfgfile output.root input.root
+  e.g. python HbbAnalyzer.py cfgs/Zee.cfg Zee.root "/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_DoubleElectron_*.root"
+  for options run 
+    python HbbAnalyzer.py --hh
+
+To submit batch jobs to the Condor queue:
+
+> condor_submit CondorJob.cfg
+  before submitting edit CondorJob.cfg and set ANALYZEDIRECTORY to your working directory
+  
+  The will submit 17 jobs (Queue 17 in CondorJob.cfg). Each job will then run one of the case statements in runCondorJob.csh. These case statements should be updated for jobs other than Z->ee
+
+
+
+
+
+
