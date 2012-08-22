@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# @(#)root/tmva $Id: TMVAClassification.py,v 1.59.2.1 2008/12/02 08:51:43 andreas.hoecker Exp $
+# @(#)root/tmva $Id: TMVAClassification.py,v 1.3 2012/07/31 17:09:19 apana Exp $
 # ------------------------------------------------------------------------------ #
 # Project      : TMVA - a Root-integrated toolkit for multivariate data analysis #
 # Package      : TMVA                                                            #
@@ -173,17 +173,21 @@ def main():
 
         factory.AddVariable("H_mass := H.mass", 'F');
         factory.AddVariable("H_pt :=H.pt", 'F');
+        factory.AddVariable("hJet_pt1 := hJet_pt[0]", 'F')
+        factory.AddVariable("hJet_pt2 := hJet_pt[1]", 'F')
         factory.AddVariable("V_pt :=V.pt", 'F');
         factory.AddVariable("hJ12_MaxCsv := max(hJet_csv[0],hJet_csv[1])", 'F');
         factory.AddVariable("hJ12_MinCsv := min(hJet_csv[0],hJet_csv[1])", 'F');
         factory.AddVariable("HV_dPhi := HVdPhi", 'F');
         factory.AddVariable("H_dEta := H.dEta", 'F');
+        factory.AddVariable("H_dR := H.dR", 'F');
+        factory.AddVariable("dPull := deltaPullAngle", 'F');
 
         # You can add so-called "Spectator variables", which are not used in the MVA training, 
         # but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the 
         # input variables, the response values of all trained MVAs, and the spectator variables
-        factory.AddSpectator("hJet_pt1 := hJet_pt[0]", 'F')
-        factory.AddSpectator("hJet_pt2 := hJet_pt[1]", 'F')
+        #factory.AddSpectator("hJet_pt1 := hJet_pt[0]", 'F')
+        #factory.AddSpectator("hJet_pt2 := hJet_pt[1]", 'F')
 
     elif _analysis == "Subjet":
         factory.AddVariable("H_mass := FatH.filteredmass", 'F');
@@ -201,9 +205,13 @@ def main():
         factory.AddVariable("SJ2_csv := fathFilterJets_csv[1]", 'F');
         factory.AddVariable("SJ3_csv := Alt$(fathFilterJets_csv[2],0)", 'F');
 
-        factory.AddSpectator("SJ1_pt := fathFilterJets_pt[0]", 'F');
-        factory.AddSpectator("SJ2_pt := fathFilterJets_pt[1]", 'F');
-        factory.AddSpectator("SJ3_pt := Alt$(fathFilterJets_pt[2],0)", 'F');
+        factory.AddVariable("SJ1_pt := fathFilterJets_pt[0]", 'F');
+        factory.AddVariable("SJ2_pt := fathFilterJets_pt[1]", 'F');
+        factory.AddVariable("SJ3_pt := Alt$(fathFilterJets_pt[2],0)", 'F');
+
+        # factory.AddSpectator("SJ1_pt := fathFilterJets_pt[0]", 'F');
+        # factory.AddSpectator("SJ2_pt := fathFilterJets_pt[1]", 'F');
+        # factory.AddSpectator("SJ3_pt := Alt$(fathFilterJets_pt[2],0)", 'F');
 
     else:
         print "Problem specifying analysis. Please choose Dijet or Subjet."
@@ -283,8 +291,8 @@ def main():
     # "SplitMode=Random" means that the input events are randomly shuffled before
     # splitting them into training and test samples
 
-    # prepareOptions="nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=NumEvents:!V"
-    prepareOptions="SplitMode=Random:!V"
+    prepareOptions="nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=None:!V"
+    # prepareOptions="SplitMode=Random:!V"
     factory.PrepareTrainingAndTestTree( mycutSig, mycutBkg, prepareOptions)
 
 
