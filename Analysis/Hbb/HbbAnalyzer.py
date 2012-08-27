@@ -80,7 +80,7 @@ class BDT_READER_AK5:
         self.bdt_csv1[0]=tree.hJet_csv[0]
         self.bdt_csv2[0]=tree.hJet_csv[1]
         self.bdt_HVdPhi[0]=tree.HVdPhi
-        self.bdt_dEta[0]=tree.dEta
+        self.bdt_dEta[0]=H.dEta
 
     def evaluate(self):
         bdt=self.reader.EvaluateMVA("BDT")
