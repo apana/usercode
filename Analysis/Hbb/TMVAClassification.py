@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# @(#)root/tmva $Id: TMVAClassification.py,v 1.3 2012/07/31 17:09:19 apana Exp $
+# @(#)root/tmva $Id: TMVAClassification.py,v 1.59.2.1 2008/12/02 08:51:43 andreas.hoecker Exp $
 # ------------------------------------------------------------------------------ #
 # Project      : TMVA - a Root-integrated toolkit for multivariate data analysis #
 # Package      : TMVA                                                            #
@@ -42,11 +42,11 @@ import math
 
 # Default settings for command line arguments
 OUTFNAME = "TMVA.root"
-OUTDIR = "TMVAout"
 ANALYSIS="Dijet"
 TREE  = "tree"
+REGRESSION = False
 
-INPUTDIR="dcache:/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2"
+INPUTDIR="dcache:/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/"
 SAMPLES={
     # key      :( Sig or Bckg,    rootfile,                                               cross section)
     "HIGGS"    :("S","DiJetPt_ZH_ZToLL_HToBB_M-125_8TeV-powheg-herwigpp.root",                   22.97),
@@ -64,19 +64,13 @@ SAMPLES={
     "STbar-tW" :("B","DiJetPt_Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola.root" ,         11177.3),
     }
 
-FRIENDS={
-    # key      :( Sig or Bckg,    rootfile,                                               cross section)
-    "HIGGS"    :("friend.root"),
-    "ZJets_ptL":("friendDY.root"),
-    }
-
 # Print usage help
 def usage():
     print " "
     print "Usage: python %s [options]" % sys.argv[0]
     print "  -o | --outputfile : name of output ROOT file containing results (default: '%s')" % OUTFNAME
-    print "  -d | --outputdir : name of output directory for the xml files (default: '%s')" % OUTDIR
     print "  -a | --analysis : Dijet or Subjet (default: '%s')" % ANALYSIS
+    print "  -r | --regression : Use Regression (default: '%s')" % REGRESSION
     print "  -v | --verbose"
     print "  -? | --usage      : print this help message"
     print "  -h | --help       : print this help message"
@@ -95,8 +89,8 @@ def main():
 
     try:
         # retrive command line options
-        shortopts  = "a:o:d:vh?"
-        longopts   = ["analysis=","outputfile=", "outputdir=","verbose", "help", "usage"]
+        shortopts  = "a:o:r:vh?"
+        longopts   = ["analysis=","outputfile=", "regression=", "verbose", "help", "usage"]
         opts, args = getopt.getopt( sys.argv[1:], shortopts, longopts )
 
     except getopt.GetoptError:
@@ -106,22 +100,24 @@ def main():
         sys.exit(1)
 
     _outfname   = OUTFNAME
-    _outdir     = OUTDIR
     _analysis   = ANALYSIS
     verbose     = False
+    _regression = REGRESSION
+
     for o, a in opts:
         if o in ("-?", "-h", "--help", "--usage"):
             usage()
             sys.exit(0)
         elif o in ("-o", "--outputfile"):
             _outfname = a
-        elif o in ("-d", "--outputdir"):
-            _outdir = a
         elif o in ("-a", "--analysis"):
             _analysis = a
+        elif o in ("-r", "--regression"):
+            _regression = True
         elif o in ("-v", "--verbose"):
             verbose = True
 
+            
     # Import ROOT classes
     from ROOT import gSystem, gROOT, gApplication, TFile, TTree, TCut
     
@@ -153,47 +149,56 @@ def main():
     # (please check "src/Config.h" to see all available global options)
     #    gConfig().GetVariablePlotting()).fTimesRMS = 8.0
     #    gConfig().GetIONames()).fWeightFileDir = "myWeightDirectory"
-    # TMVA.gConfig().GetIONames().fWeightFileDir = "weights_" + _analysis
-    # OutDir="weights_" + _analysis
-
-    if os.path.exists(_outdir):
-        print "Output directory: ",_outdir," already exists, please specify new directory"
-        sys.exit(1)
-
-    os.makedirs(_outdir)
-    TMVA.gConfig().GetIONames().fWeightFileDir = _outdir
-        
+    TMVA.gConfig().GetIONames().fWeightFileDir = "weights_" + _analysis
 
     # Define the input variables that shall be used for the classifier training
     # note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
     # [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
     if _analysis == "Dijet":
 
+        if not _regression:
+            factory.AddVariable("H_mass := H.mass", 'F');
+            factory.AddVariable("H_pt :=H.pt", 'F');
+            factory.AddVariable("hJet_pt1 := hJet_pt[0]", 'F')
+            factory.AddVariable("hJet_pt2 := hJet_pt[1]", 'F')
+        else:
+            factory.AddVariable("HCorr_mass := newHiggsMass", 'F');
+            factory.AddVariable("HCorr_pt := newHiggsPt", 'F');
+            factory.AddVariable("hJ1Corr_pt := hJet_genPtReg0", 'F');
+            factory.AddVariable("hJ2Corr_pt := hJet_genPtReg1", 'F');
 
-
-        factory.AddVariable("H_mass := H.mass", 'F');
-        factory.AddVariable("H_pt :=H.pt", 'F');
-        factory.AddVariable("hJet_pt1 := hJet_pt[0]", 'F')
-        factory.AddVariable("hJet_pt2 := hJet_pt[1]", 'F')
         factory.AddVariable("V_pt :=V.pt", 'F');
+        factory.AddVariable("H_dR := H.dR", 'F');
         factory.AddVariable("hJ12_MaxCsv := max(hJet_csv[0],hJet_csv[1])", 'F');
         factory.AddVariable("hJ12_MinCsv := min(hJet_csv[0],hJet_csv[1])", 'F');
         factory.AddVariable("HV_dPhi := HVdPhi", 'F');
         factory.AddVariable("H_dEta := H.dEta", 'F');
-        factory.AddVariable("H_dR := H.dR", 'F');
+        factory.AddVariable("NAddJet:=Sum$(aJet_pt>20 && abs(aJet_eta)<4.5)", 'I' );
         factory.AddVariable("dPull := deltaPullAngle", 'F');
+        
 
         # You can add so-called "Spectator variables", which are not used in the MVA training, 
         # but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the 
         # input variables, the response values of all trained MVAs, and the spectator variables
-        #factory.AddSpectator("hJet_pt1 := hJet_pt[0]", 'F')
-        #factory.AddSpectator("hJet_pt2 := hJet_pt[1]", 'F')
+        #factory.AddSpectator("hJet_pt1 := hJet_pt[0]", 'F');
+        #factory.AddSpectator("hJet_pt2 := hJet_pt[1]", 'F');
 
     elif _analysis == "Subjet":
-        factory.AddVariable("H_mass := FatH.filteredmass", 'F');
-        factory.AddVariable("H_pt   := FatH.filteredpt", 'F');
+
+        if not _regression:
+            factory.AddVariable("H_mass := FatH.filteredmass", 'F');
+            factory.AddVariable("H_pt   := FatH.filteredpt", 'F');
+            factory.AddVariable("SJ1_pt := fathFilterJets_pt[0]", 'F');
+            factory.AddVariable("SJ2_pt := fathFilterJets_pt[1]", 'F');
+            factory.AddVariable("SJ3_pt := Alt$(fathFilterJets_pt[2],0)", 'F');
+        else:
+            factory.AddVariable("HCorr_mass := newfatHiggsMass", 'F');
+            factory.AddVariable("HCorr_pt := newfatHiggsPt", 'F');
+            factory.AddVariable("SJ1Corr_pt := fathFilterJets_genPtReg0", 'F');
+            factory.AddVariable("SJ2Corr_pt := fathFilterJetsx_genPtReg1", 'F');
+            factory.AddVariable("SJ3_pt := Alt$(fathFilterJets_pt[2],0)", 'F'); #change later
+            
         factory.AddVariable("V_pt   := V.pt", 'F');
-        # factory.AddVariable("HV_dPhi := math.fabs(deltaPhi(FatH.filteredphi,V.phi))", 'F');
         factory.AddVariable("HV_dPhi := " +\
                              "FatH.filteredphi - V.phi > pi ? " +\
                              "abs(FatH.filteredphi - V.phi - 2*pi) : " +\
@@ -205,13 +210,43 @@ def main():
         factory.AddVariable("SJ2_csv := fathFilterJets_csv[1]", 'F');
         factory.AddVariable("SJ3_csv := Alt$(fathFilterJets_csv[2],0)", 'F');
 
-        factory.AddVariable("SJ1_pt := fathFilterJets_pt[0]", 'F');
-        factory.AddVariable("SJ2_pt := fathFilterJets_pt[1]", 'F');
-        factory.AddVariable("SJ3_pt := Alt$(fathFilterJets_pt[2],0)", 'F');
+        factory.AddVariable("SJ12_dEta := " +\
+                                "nfathFilterJets < 2 ? 0 : " +\
+                                "fabs(fathFilterJets_eta[0] - fathFilterJets_eta[1] )", 'F');
+        
+        factory.AddVariable("SJ13_dEta := " +\
+                                "nfathFilterJets < 3 ? 0 : " +\
+                                "abs( fathFilterJets_eta[0] - Alt$(fathFilterJets_eta[2],0))", 'F');
 
-        # factory.AddSpectator("SJ1_pt := fathFilterJets_pt[0]", 'F');
-        # factory.AddSpectator("SJ2_pt := fathFilterJets_pt[1]", 'F');
-        # factory.AddSpectator("SJ3_pt := Alt$(fathFilterJets_pt[2],0)", 'F');
+        factory.AddVariable("SJ12_dPhi := " +\
+                                "nfathFilterJets < 2 ? 0 : " +\
+                                "fathFilterJets_phi[0] - fathFilterJets_phi[1] > pi ? " +\
+                                "abs( fathFilterJets_phi[0] - fathFilterJets_phi[1] - 2*pi) : " +\
+                                "fathFilterJets_phi[0] - fathFilterJets_phi[1] < -pi ? " +\
+                                "abs( fathFilterJets_phi[0] - fathFilterJets_phi[1] + 2*pi) : " +\
+                                "abs( fathFilterJets_phi[0] - fathFilterJets_phi[1])", 'F');
+
+        factory.AddVariable("SJ13_dPhi := " +\
+                                "nfathFilterJets < 3 ? 0 : " +\
+                                "fathFilterJets_phi[0] - Alt$(fathFilterJets_phi[2],0) > pi ? " +\
+                                "abs(fathFilterJets_phi[0] - " +\
+                                "Alt$(fathFilterJets_phi[2],0) - 2*pi) : " +\
+                                "fathFilterJets_phi[0] - Alt$(fathFilterJets_phi[2],0) < -pi ? " +\
+                                "abs(fathFilterJets_phi[0] - " +\
+                                "Alt$(fathFilterJets_phi[2],0) + 2*pi) : " +\
+                                "abs(fathFilterJets_phi[0] - Alt$(fathFilterJets_phi[2],0))", 'F');
+
+        factory.AddVariable("SJ12_dR := " +\
+                                "nfathFilterJets < 2 ? 0 : " +\
+                                "deltaR(fathFilterJets_eta[0],fathFilterJets_phi[0],fathFilterJets_eta[1],fathFilterJets_phi[1])", 'F');
+        
+        factory.AddVariable("SJ13_dR := nfathFilterJets < 3 ? 0 : " +\
+                                "deltaR(fathFilterJets_eta[0],fathFilterJets_phi[0],Alt$(fathFilterJets_eta[2],0),Alt$(fathFilterJets_phi[2],0))", 'F');
+
+        factory.AddVariable("NAddJet:= " +\
+                                "nfathFilterJets < 2 ? 0 : " +\
+                                "Sum$(aJet_pt>20 && abs(aJet_eta)<4.5 && deltaR(fathFilterJets_eta[0],fathFilterJets_phi[0],aJet_eta,aJet_phi)>0.3 && deltaR(fathFilterJets_eta[1],fathFilterJets_phi[1],aJet_eta,aJet_phi)>0.3)+Sum$(hJet_pt>20 && abs(hJet_eta)<4.5 && deltaR(fathFilterJets_eta[0],fathFilterJets_phi[0],hJet_eta,hJet_phi)>0.3 && deltaR(fathFilterJets_eta[1],fathFilterJets_phi[1],hJet_eta,hJet_phi)>0.3)", 'I' );
+       
 
     else:
         print "Problem specifying analysis. Please choose Dijet or Subjet."
@@ -221,15 +256,14 @@ def main():
     ## Get the Signal and Background trees
     for Sample in SAMPLES.keys():
         SampleInfo=SAMPLES[Sample]
-        ## FriendInfo=FRIENDS[Sample]
 
         SampleType=SampleInfo[0] # signal or background
         infile=os.path.join(INPUTDIR,SampleInfo[1])
         xs=SampleInfo[2]
 
-
-        f=TFile.Open(infile)# Open the input file 
-        h = f.Get("Count")  # get number of step 1 events
+        ## get number of step 1 events
+        f=TFile.Open(infile)
+        h = f.Get("Count")
         nEVT=int(h.GetBinContent(1))
 
         wt  =xs/(nEVT)        
@@ -237,9 +271,6 @@ def main():
         print "XS:nEVT:wt: ", xs,nEVT,wt
 
         theTree      = f.Get( TREE )
-
-
-        # theTree.AddFriend("treeFR",FriendInfo)
         if SampleType == "S":
             factory.AddSignalTree    ( theTree, wt )
         elif SampleType == "B":
@@ -252,31 +283,53 @@ def main():
     # table10 AN-2011/430
     if _analysis == "Dijet":
         cutString=\
-            "Vtype == 1"             + " && " +\
+            "Vtype == 0"             + " && " +\
+            "vLepton_pt[0]>20."      + " && " +\
             "H.HiggsFlag > 0"        + " && " +\
             "V.mass > 75.0"          + " && " +\
             "V.mass < 105.0"         + " && " +\
             "V.pt > 100.0"           + " && " +\
-            "hJet_pt[0] > 20.0"      + " && " +\
-            "hJet_pt[1] > 20.0"      + " && " +\
-            "H.mass > 80.0"          + " && " +\
-            "H.mass < 150.0"         + " && " +\
             "max(hJet_csv[0],hJet_csv[1]) > 0.244"  + " && " +\
-            "min(hJet_csv[0],hJet_csv[1]) > 0.244" 
+            "min(hJet_csv[0],hJet_csv[1]) > 0.244" + " && " 
+
+        if not _regression:
+            cutString += \
+                "hJet_pt[0] > 20.0"      + " && " +\
+                "hJet_pt[1] > 20.0"      + " && " +\
+                "H.mass > 80.0"          + " && " +\
+                "H.mass < 150.0"         
+
+        else:
+            cutString += \
+                "hJet_genPtReg0 > 20.0"           + " && " +\
+                "hJet_genPtReg0 > 20.0"           + " && " +\
+                "newHiggsMass > 80.0 && newHiggsMass < 150.0"
+
     elif _analysis == "Subjet":
         cutString=\
-            "Vtype == 1"             + " && " +\
+            "Vtype == 0"             + " && " +\
+            "vLepton_pt[0]>20."      + " && " +\
             "FatH.FatHiggsFlag > 0"  + " && " +\
             "V.mass > 75.0"          + " && " +\
             "V.mass < 105.0"         + " && " +\
             "V.pt > 100.0"           + " && " +\
             "nfathFilterJets >= 2"   + " && " +\
-            "fathFilterJets_pt[0] > 20.0"      + " && " +\
-            "fathFilterJets_pt[1] > 20.0"      + " && " +\
-            "FatH.filteredmass > 80.0"          + " && " +\
-            "FatH.filteredmass < 150.0"         + " && " +\
             "max(fathFilterJets_csv[0],fathFilterJets_csv[1]) > 0.244"  + " && " +\
-            "min(fathFilterJets_csv[0],fathFilterJets_csv[1]) > 0.244" 
+            "min(fathFilterJets_csv[0],fathFilterJets_csv[1]) > 0.244" + " && "
+
+        if not _regression:
+            cutString += \
+                "fathFilterJets_pt[0] > 20.0"      + " && " +\
+                "fathFilterJets_pt[1] > 20.0"      + " && " +\
+                "FatH.filteredmass > 80.0"         + " && " +\
+                "FatH.filteredmass < 150.0"     
+        else:
+            cutString += \
+                "fathFilterJets_genPtReg0 > 20.0"           + " && " +\
+                "fathFilterJets_genPtReg0 > 20.0"           + " && " +\
+                "newfatHiggsMass > 80.0 && newfatHiggsMass < 150.0"
+
+
     else:
         print "Problem specifying analysis. Please choose Dijet or Subjet."
         sys.exit(1)
@@ -292,7 +345,7 @@ def main():
     # splitting them into training and test samples
 
     prepareOptions="nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=None:!V"
-    # prepareOptions="SplitMode=Random:!V"
+    #prepareOptions="SplitMode=Random:!V"
     factory.PrepareTrainingAndTestTree( mycutSig, mycutBkg, prepareOptions)
 
 
