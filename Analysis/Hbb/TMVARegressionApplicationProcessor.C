@@ -150,6 +150,7 @@ void Process( TString  *fname , bool doTheFirst, TString myMethodList = "" )
       reader->AddVariable("hJet_pt", &hjetpt[0]);
       reader->AddVariable("hJet_eta", &hjeteta[0]);
       reader->AddVariable("hJet_phi", &hjetphi[0]);
+      reader->AddVariable("hJet_e", &hjete[0]);
       reader->AddVariable("hJet_ptRaw*((hJet_ptRaw+resolutionBias(fabs(hJet_eta))*(hJet_ptRaw-hJet_genPt))/hJet_ptRaw)", &hjetptraw[0]);
       //reader->AddVariable("newptRaw:=evalJERBias(hJet_ptRaw, hJet_genPt, hJet_eta)", &hjetptraw[0]);
       reader->AddVariable("hJet_Mt:=evalMt(hJet_pt, hJet_eta, hJet_phi, hJet_e)", &hjetmt[0]);
@@ -171,6 +172,7 @@ void Process( TString  *fname , bool doTheFirst, TString myMethodList = "" )
       reader->AddVariable("fathFilterJets_pt", &fathFilterJetspt[0]);
       reader->AddVariable("fathFilterJets_eta", &fathFilterJetseta[0]);
       reader->AddVariable("fathFilterJets_phi", &fathFilterJetsphi[0]);
+      reader->AddVariable("fathFilterJets_e", &fathFilterJetse[0]);
       reader->AddVariable("fathFilterJets_ptRaw*((fathFilterJets_ptRaw+resolutionBias(fabs(fathFilterJets_eta))*(fathFilterJets_ptRaw-fathFilterJets_genPt))/fathFilterJets_ptRaw)", &fathFilterJetsptraw[0]);
       reader->AddVariable("fathFilterJets_Mt:=evalMt(fathFilterJets_pt, fathFilterJets_eta, fathFilterJets_phi, fathFilterJets_e)", &fathFilterJetsmt[0]);
       reader->AddVariable("fathFilterJets_et:=evalEt(fathFilterJets_pt, fathFilterJets_eta, fathFilterJets_phi, fathFilterJets_e)", &fathFilterJetset[0]);
@@ -190,6 +192,7 @@ void Process( TString  *fname , bool doTheFirst, TString myMethodList = "" )
       reader->AddVariable("hJet_pt", &hjetpt[1]);
       reader->AddVariable("hJet_eta", &hjeteta[1]);
       reader->AddVariable("hJet_phi", &hjetphi[1]);
+      reader->AddVariable("hJet_e", &hjete[1]);
       reader->AddVariable("hJet_ptRaw*((hJet_ptRaw+resolutionBias(fabs(hJet_eta))*(hJet_ptRaw-hJet_genPt))/hJet_ptRaw)", &hjetptraw[1]);
       //reader->AddVariable("newptRaw:=evalJERBias(hJet_ptRaw, hJet_genPt, hJet_eta)", &hjetptraw[1]);
       reader->AddVariable("hJet_Mt:=evalMt(hJet_pt, hJet_eta, hJet_phi, hJet_e)", &hjetmt[1]);
@@ -211,6 +214,7 @@ void Process( TString  *fname , bool doTheFirst, TString myMethodList = "" )
       reader->AddVariable("fathFilterJets_pt", &fathFilterJetspt[1]);
       reader->AddVariable("fathFilterJets_eta", &fathFilterJetseta[1]);
       reader->AddVariable("fathFilterJets_phi", &fathFilterJetsphi[1]);
+      reader->AddVariable("fathFilterJets_e", &fathFilterJetse[1]);
       reader->AddVariable("fathFilterJets_ptRaw*((fathFilterJets_ptRaw+resolutionBias(fabs(fathFilterJets_eta))*(fathFilterJets_ptRaw-fathFilterJets_genPt))/fathFilterJets_ptRaw)", &fathFilterJetsptraw[1]);
       reader->AddVariable("fathFilterJets_Mt:=evalMt(fathFilterJets_pt, fathFilterJets_eta, fathFilterJets_phi, fathFilterJets_e)", &fathFilterJetsmt[1]);
       reader->AddVariable("fathFilterJets_et:=evalEt(fathFilterJets_pt, fathFilterJets_eta, fathFilterJets_phi, fathFilterJets_e)", &fathFilterJetset[1]);
@@ -312,6 +316,7 @@ void Process( TString  *fname , bool doTheFirst, TString myMethodList = "" )
   TFile *nfile2 = new TFile(fname->Data() ,"recreate");
   TTree *ntree = theTree->CopyTree("");
 
+  std::cout << "Entries " << count->GetEntries() << std::endl;
   count->Clone()->Write();
   input3DPU->Clone()->Write();
   countWithPU->Clone()->Write();
@@ -408,7 +413,7 @@ void Process( TString  *fname , bool doTheFirst, TString myMethodList = "" )
       fathFilterJetset[1] = evalEt(fathFilterJetspt[1], fathFilterJetseta[1], fathFilterJetsphi[1], fathFilterJetse[1]);
       fathFilterJetsmt[0] = evalMt(fathFilterJetspt[0], fathFilterJetseta[0], fathFilterJetsphi[0], fathFilterJetse[0]);
       fathFilterJetsmt[1] = evalMt(fathFilterJetspt[1], fathFilterJetseta[1], fathFilterJetsphi[1], fathFilterJetse[1]);
-
+      
       if ( fathFilterJetsgenpt[0] < 0 ) {
 	fathFilterJetsptraw[0] = fathFilterJetsptrawold[0];
       }
@@ -495,7 +500,7 @@ void TMVARegressionApplicationProcessor(){
 
   string titles[size] = {
     
-    "/uscmst1b_scratch/lpc1/lpctrig/ingabu/Substructre/Regression/DiJetPt_ZH_ZToLL_HToBB_M-125_8TeV-powheg-herwigpp.root"
+    "/uscmst1b_scratch/lpc1/lpctrig/ingabu/Substructre/Regression/ZH_125_summer12_33b.root"
     //"/uscmst1b_scratch/lpc1/lpctrig/ingabu/Substructre/Regression/DiJetPt_DYJetsToLL_PtZ-70To100_TuneZ2star_8TeV-madgraph-tarball.root",
     //"/uscmst1b_scratch/lpc1/lpctrig/ingabu/Substructre/Regression/DiJetPt_DYJetsToLL_PtZ-100_TuneZ2star_8TeV-madgraph.root",
     //"/uscmst1b_scratch/lpc1/lpctrig/ingabu/Substructre/Regression/DiJetPt_ZZ_TuneZ2star_8TeV_pythia6_tauola.root",

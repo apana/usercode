@@ -123,6 +123,7 @@ def TMVARegression():
         factory.AddVariable("hJet_pt", "hJet_pt", "units", 'F')
         factory.AddVariable("hJet_eta", "hJet_eta", "units", 'F')
         factory.AddVariable("hJet_phi", "hJet_phi", "units", 'F')
+        factory.AddVariable("hJet_e", "hJet_e", "units", 'F')
         factory.AddVariable("hJet_ptRaw*((hJet_ptRaw+resolutionBias(fabs(hJet_eta))*(hJet_ptRaw-hJet_genPt))/hJet_ptRaw)", "hJet_ptRaw*((hJet_ptRaw+resolutionBias(fabs(hJet_eta))*(hJet_ptRaw-hJet_genPt))/hJet_ptRaw)", "units", 'F')
         factory.AddVariable("hJet_Mt:=evalMt(hJet_pt, hJet_eta, hJet_phi, hJet_e)","hJet_Mt", "units", 'F')
         factory.AddVariable("hJet_Et:=evalEt(hJet_pt, hJet_eta, hJet_phi, hJet_e)","hJet_Et", "units", 'F')
@@ -147,6 +148,7 @@ def TMVARegression():
         factory.AddVariable("fathFilterJets_pt", "fathFilterJets_pt", "units", 'F')
         factory.AddVariable("fathFilterJets_eta", "fathFilterJets_eta", "units", 'F')
         factory.AddVariable("fathFilterJets_phi", "fathFilterJets_phi", "units", 'F')
+        factory.AddVariable("fathFilterJets_e", "fathFilterJets_e", "units", 'F')
         factory.AddVariable("fathFilterJets_ptRaw*((fathFilterJets_ptRaw+resolutionBias(fabs(fathFilterJets_eta))*(fathFilterJets_ptRaw-fathFilterJets_genPt))/fathFilterJets_ptRaw)", "fathFilterJets_ptRaw*((fathFilterJets_ptRaw+resolutionBias(fabs(fathFilterJets_eta))*(fathFilterJets_ptRaw-fathFilterJets_genPt))/fathFilterJets_ptRaw)", "units", 'F')
         factory.AddVariable("fathFilterJets_Mt:=evalMt(fathFilterJets_pt, fathFilterJets_eta, fathFilterJets_phi, fathFilterJets_e)","fathFilterJets_Mt", "units", 'F')
         factory.AddVariable("fathFilterJets_Et:=evalEt(fathFilterJets_pt, fathFilterJets_eta, fathFilterJets_phi, fathFilterJets_e)","fathFilterJets_Et", "units", 'F')
@@ -181,15 +183,11 @@ def TMVARegression():
         chain.Add("Step2_output_May11/WH_135_ForRegression.root")
         
 
-    if en8TeV and _analysis == "Dijet":
-        chain.Add("dcache:/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_ZH_ZToLL_HToBB_M-110_8TeV-powheg-herwigpp.root")
-        chain.Add("dcache:/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_ZH_ZToLL_HToBB_M-115_8TeV-powheg-herwigpp.root")
-        chain.Add("dcache:/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_ZH_ZToLL_HToBB_M-120_8TeV-powheg-herwigpp.root")
-        chain.Add("dcache:/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_ZH_ZToLL_HToBB_M-125_8TeV-powheg-herwigpp.root")
-        chain.Add("dcache:/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_ZH_ZToLL_HToBB_M-130_8TeV-powheg-herwigpp.root")
+    #if en8TeV and _analysis == "Dijet":
+    #    chain.Add("dcache:/pnfs/cms/WAX/11/store/user/lpchbb/apana/Step1V33_Step2_V2/DiJetPt_ZH_ZToLL_HToBB_M-110_8TeV-powheg-herwigpp.root")
         
 
-    if en8TeV and _analysis == "Subjet": 
+    if en8TeV: 
         chain.Add("/uscmst1b_scratch/lpc1/lpctrig/apana/Higgs/Step2/NtupleV34/CMSSW_5_2_5/src/VHbbAnalysis/VHbbDataFormats/bin/Step2/ZH/ZH_110_summer12_33b.root")
         chain.Add("/uscmst1b_scratch/lpc1/lpctrig/apana/Higgs/Step2/NtupleV34/CMSSW_5_2_5/src/VHbbAnalysis/VHbbDataFormats/bin/Step2/ZH/ZH_115_summer12_33b.root")
         chain.Add("/uscmst1b_scratch/lpc1/lpctrig/apana/Higgs/Step2/NtupleV34/CMSSW_5_2_5/src/VHbbAnalysis/VHbbDataFormats/bin/Step2/ZH/ZH_120_summer12_33b.root")
@@ -212,26 +210,32 @@ def TMVARegression():
 
     if _analysis == "Dijet":
         cutString=\
-            "Vtype == 0"                            + " && " +\
+            "(Vtype == 0 || Vtype == 1)"         + " && " +\
             "hJet_pt[0] > 20.0"                     + " && " +\
             "hJet_pt[1] > 20.0"                     + " && " +\
+            "hJet_genPt[0] > 0.0"                   + " && " +\
+            "hJet_genPt[1] > 0.0"                   + " && " +\
             "hJet_eta[0] < 2.4"                     + " && " +\
             "hJet_eta[1] < 2.4"                     + " && " +\
+            "hJet_id[0] > 0.0"                      + " && " +\
+            "hJet_id[1] > 0.0"                      + " && " +\
             "max(hJet_csv[0],hJet_csv[1]) > 0.0"    + " && " +\
             "min(hJet_csv[0],hJet_csv[1]) > 0.0"    + " && " +\
-            "H.pt > 120"
+            "H.pt > 100"
 
 
     elif _analysis == "Subjet":
         cutString=\
-            "Vtype == 0"                            + " && " +\
+            "(Vtype == 0 || Vtype == 1)"                   + " && " +\
             "fathFilterJets_pt[0] > 20.0"                     + " && " +\
             "fathFilterJets_pt[1] > 20.0"                     + " && " +\
+            "fathFilterJets_genPt[0] > 0.0"                   + " && " +\
+            "fathFilterJets_genPt[1] > 0.0"                   + " && " +\
             "fathFilterJets_eta[0] < 2.4"                     + " && " +\
             "fathFilterJets_eta[1] < 2.4"                     + " && " +\
             "max(fathFilterJets_csv[0],fathFilterJets_csv[1]) > 0.0"    + " && " +\
             "min(fathFilterJets_csv[0],fathFilterJets_csv[1]) > 0.0"    + " && " +\
-            "FatH.filteredpt > 120"
+            "FatH.filteredpt > 100"
 
     else:
         print "Problem specifying analysis. Please choose Dijet or Subjet."
@@ -245,7 +249,7 @@ def TMVARegression():
     if en7TeV:
         factory.PrepareTrainingAndTestTree( mycut, "nTrain_Regression=125000:nTest_Regression=125000:SplitMode=Random:NormMode=NumEvents:!V" )
     if en8TeV:
-        factory.PrepareTrainingAndTestTree( mycut, "nTrain_Regression=130500:nTest_Regression=130500:SplitMode=Random:NormMode=NumEvents:!V" )
+        factory.PrepareTrainingAndTestTree( mycut, "nTrain_Regression=111000:nTest_Regression=111000:SplitMode=Random:NormMode=NumEvents:!V" )
 
     #If no numbers of events are given, half of the events in the tree are used 
     #for training, and the other half for testing:
