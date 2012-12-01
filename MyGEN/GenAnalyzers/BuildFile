@@ -7,14 +7,3 @@
 <use name=PhysicsTools/UtilAlgos>
 <use name=FWCore/ServiceRegistry>
 <flags EDM_PLUGIN=1>
-<export>
-  <lib name=MyGENGenAnalyzes>
-  <use name=FWCore/Framework>
-  <use name=Foundation/PluginManager>
-  <use name=FWCore/ParameterSet>
-  <use name=root>
-  <use name=DataFormats/HepMCCandidate>
-  <use name=SimDataFormats/HepMCProduct>
-  <use name=PhysicsTools/UtilAlgos>
-  <use name=FWCore/ServiceRegistry>
-</export>
